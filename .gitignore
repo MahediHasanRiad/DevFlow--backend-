@@ -1,0 +1,61 @@
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage
+*.lcov
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Build outputs
+dist
+dist-ssr
+.next
+out
+
+# All environment variable / secret files
+.env
+.env*
+*.local
+
+### VisualStudioCode ###
+.vscode/
+.history/
+*.vsix
+.ionide
+
+
+### Custom Local Scripts & Temp Files ###
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+/generated/prisma
+firebase-config.json
+/generated/prisma
+
+firebase-config.json
+
+
+firebase-config.json
+
+firebase-config.json

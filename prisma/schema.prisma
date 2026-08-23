@@ -1,0 +1,395 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  EMPLOYEE
+  PROJECT_MANAGER
+  ADMIN
+}
+
+enum Designation {
+  UI_UX
+  FRONTEND
+  BACKEND
+  FULL_STACK
+  QA
+  DEVOPS
+  TEAM_LEAD
+}
+
+enum ProjectStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  IN_PROGRESS_50
+  IN_PROGRESS_60
+  IN_PROGRESS_70
+  IN_PROGRESS_80
+  ALMOST_COMPLETED
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum DailyPlanRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DailyPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+
+  ADD_TEAM_MEMBER
+  REMOVE_TEAM_MEMBER
+
+  ADD_PROJECT_MEMBER
+  REMOVE_PROJECT_MEMBER
+
+  ASSIGN_TASK
+  UNASSIGN_TASK
+
+  APPROVE
+  REJECT
+
+  CREATE_DAILY_PLAN
+  UPDATE_DAILY_PLAN
+  DELETE_DAILY_PLAN
+
+  SEND_MESSAGE
+  DELETE_MESSAGE
+}
+
+enum AuditEntityType {
+  USER
+  TEAM
+  TEAM_MEMBER
+  PROJECT
+  PROJECT_MEMBER
+  TASK
+  TASK_ASSIGNMENT
+  DAILY_PLAN_REQUEST
+  DAILY_PLAN
+  DAILY_PLAN_ITEM
+  DAILY_REVIEW
+  PROJECT_UPDATE
+  NOTIFICATION
+  CONVERSATION
+  MESSAGE
+}
+
+model User {
+  id          String      @id @default(uuid())
+  name        String
+  email       String      @unique
+  password    String
+  role        UserRole    @default(EMPLOYEE)
+  designation Designation
+  avatar      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdTeams Team[]       @relation("TeamCreatedBy")
+  teamMembers  TeamMember[]
+
+  createdProjects Project[]       @relation("ProjectCreatedBy")
+  projectMembers  ProjectMember[]
+
+  dailyPlanRequests DailyPlanRequest[] @relation("DailyPlanRequestUser")
+  createdDailyPlans DailyPlan[]        @relation("DailyPlanCreatedBy")
+  projectUpdates    ProjectUpdate[]
+  notifications     Notification[]
+
+  // Chat
+  conversationsCreated     Conversation[]            @relation("ConversationCreatedBy")
+  conversationParticipants ConversationParticipant[]
+  sentMessages             Message[]
+
+  auditLogs AuditLog[]
+
+  @@index([role])
+  @@index([designation])
+}
+
+model Team {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  createdById String
+  createdBy   User   @relation("TeamCreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members TeamMember[]
+
+  dailyPlanRequests DailyPlanRequest[]
+  dailyPlans        DailyPlan[]
+
+  @@index([createdById])
+}
+
+model TeamMember {
+  id String @id @default(uuid())
+
+  teamId String
+  userId String
+
+  responsibility Designation
+
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model Project {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  status ProjectStatus @default(NOT_STARTED)
+
+  // 0 - 100
+  progress Int @default(0)
+
+  startDate DateTime?
+  deadline  DateTime?
+
+  totalMileStone     Int
+  completedMileStone Int @default(0)
+
+  amount         Int
+  receivedAmount Int @default(0)
+
+  createdById String
+  createdBy   User   @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members ProjectMember[]
+  updates ProjectUpdate[]
+
+  @@index([status])
+  @@index([deadline])
+  @@index([createdById])
+}
+
+model ProjectMember {
+  id String @id @default(uuid())
+
+  projectId String
+  userId    String
+
+  responsibility Designation
+
+  joinedAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model DailyPlanRequest {
+  id String @id @default(uuid())
+
+  userId String
+  teamId String
+
+  task String
+  date DateTime
+
+  status DailyPlanRequestStatus @default(PENDING)
+  note   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation("DailyPlanRequestUser", fields: [userId], references: [id])
+  team Team @relation(fields: [teamId], references: [id])
+
+  dailyPlan DailyPlan?
+
+  @@index([userId, date])
+  @@index([teamId, date])
+  @@index([status])
+}
+
+model DailyPlan {
+  id String @id @default(uuid())
+
+  teamId String
+  date   DateTime
+
+  dailyPlanRequestId String @unique
+
+  createdById String
+  status      DailyPlanStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  dailyPlanRequest DailyPlanRequest @relation(fields: [dailyPlanRequestId], references: [id])
+
+  createdBy User @relation("DailyPlanCreatedBy", fields: [createdById], references: [id])
+
+  @@unique([teamId, date])
+  @@index([createdById])
+}
+
+model ProjectUpdate {
+  id String @id @default(uuid())
+
+  projectId   String
+  createdById String
+
+  status   ProjectStatus
+  progress Int
+
+  summary String
+  note    String?
+
+  createdAt DateTime @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@index([projectId, createdAt])
+  @@index([createdById])
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  userId String
+
+  type    String
+  title   String
+  message String
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  type  ConversationType
+  title String?
+
+  createdById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy User @relation("ConversationCreatedBy", fields: [createdById], references: [id])
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([createdById])
+}
+
+model ConversationParticipant {
+  id             String @id @default(uuid())
+  conversationId String
+  userId         String
+
+  joinedAt DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id String @id @default(uuid())
+
+  conversationId String
+  senderId       String
+
+  type MessageType @default(TEXT)
+
+  message    String?
+  attachment String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  userId String
+
+  action     AuditAction
+  entityType AuditEntityType
+  entityId   String?
+
+  oldValue Json?
+  newValue Json?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
