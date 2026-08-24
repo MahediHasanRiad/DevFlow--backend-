@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  DesignationSchema,
+  UserRoleSchema,
+} from "../../auth/validation/register-input.validation.js";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = [
@@ -38,28 +42,8 @@ export const updateUserSchema = z.object({
       z.string(),
     ])
     .optional(),
-
-  latitude: z
-    .number()
-    .min(-90, "Latitude must be between -90 and 90")
-    .max(90, "Latitude must be between -90 and 90")
-    .optional(),
-
-  longitude: z
-    .number()
-    .min(-180, "Longitude must be between -180 and 180")
-    .max(180, "Longitude must be between -180 and 180")
-    .optional(),
-
-  address: z.string().trim().optional(),
-
-  bio: z
-    .string()
-    .trim()
-    .max(1000, "Bio cannot exceed 1000 characters")
-    .optional(),
-
-  stripeAccountId: z.string().trim().optional(),
+  role: UserRoleSchema.optional().default("EMPLOYEE"),
+  designation: DesignationSchema.optional(),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

@@ -5,7 +5,7 @@ import { generateToken } from "../../../shared/generate-token.js";
 import { LoginInputSchema } from "../validation/login-input.validation.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { AuthService } from "../service/register.service.js";
-import { UserService } from "../../user/self/service/user.service.js";
+import { UserService } from "../../user/service/user.service.js";
 
 export const loginController = asyncHandler(async (req, res) => {
   // 1. Validate Input

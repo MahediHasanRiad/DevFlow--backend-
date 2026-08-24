@@ -1,6 +1,6 @@
-import { prisma } from "../../../../lib/prisma.js";
-import { apiResponse } from "../../../../shared/apiResponseHandler.js";
-import { asyncHandler } from "../../../../shared/asyncHandler.js";
+import { prisma } from "../../../lib/prisma.js";
+import { apiResponse } from "../../../shared/apiResponseHandler.js";
+import { asyncHandler } from "../../../shared/asyncHandler.js";
 
 export const allUserListController = asyncHandler(async(req, res) => {
     const allUser = await prisma.user.findMany({where: {}})

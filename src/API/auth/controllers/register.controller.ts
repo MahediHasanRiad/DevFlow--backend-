@@ -6,7 +6,7 @@ import { sendEmailService } from "../../../config/send-mail.js";
 import redis from "../../../config/redis.js";
 import { AuthService } from "../service/register.service.js";
 import { RegisterInputSchema } from "../validation/register-input.validation.js";
-import { UserService } from "../../user/self/service/user.service.js";
+import { UserService } from "../../user/service/user.service.js";
 import { CloudinaryFileUpload } from "../../../shared/cloudinary.js";
 
 

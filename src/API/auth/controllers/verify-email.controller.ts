@@ -4,7 +4,7 @@ import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { generateToken } from "../../../shared/generate-token.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
-import { UserService } from "../../user/self/service/user.service.js";
+import { UserService } from "../../user/service/user.service.js";
 
 export const VerifyEmailController = asyncHandler(async (req, res) => {
 

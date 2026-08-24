@@ -1,7 +1,7 @@
-import { prisma } from "../../../../lib/prisma.js";
-import { ApiErrorHandler } from "../../../../shared/apiErrorHandler.js";
-import { apiResponse } from "../../../../shared/apiResponseHandler.js";
-import { asyncHandler } from "../../../../shared/asyncHandler.js";
+import { prisma } from "../../../lib/prisma.js";
+import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
+import { apiResponse } from "../../../shared/apiResponseHandler.js";
+import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { UserService } from "../service/user.service.js";
 
 export const deleteAUserController = asyncHandler(async(req, res) => {

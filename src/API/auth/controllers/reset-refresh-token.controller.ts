@@ -3,7 +3,7 @@ import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { generateToken } from "../../../shared/generate-token.js";
 import { AuthService } from "../service/register.service.js";
-import { UserService } from "../../user/self/service/user.service.js";
+import { UserService } from "../../user/service/user.service.js";
 
 export const resetRefreshTokenController = asyncHandler(async (req, res) => {
 

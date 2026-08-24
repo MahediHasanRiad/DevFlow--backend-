@@ -4,7 +4,7 @@ import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { apiResponse } from '../../../shared/apiResponseHandler.js';
 import { UpdatePassSchema } from '../validation/update-password.validation copy.js';
 import { AuthService } from '../service/register.service.js';
-import { UserService } from '../../user/self/service/user.service.js';
+import { UserService } from '../../user/service/user.service.js';
 
 export const updatePasswordController = asyncHandler(async(req, res) => {
 

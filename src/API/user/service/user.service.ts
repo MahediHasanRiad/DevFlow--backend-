@@ -1,10 +1,10 @@
-import { prisma } from "../../../../lib/prisma.js";
-import { ApiErrorHandler } from "../../../../shared/apiErrorHandler.js";
+import { prisma } from "../../../lib/prisma.js";
+import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import type {
   CreateUserInput,
   DesignationType,
   UserRoleType,
-} from "../../../auth/validation/register-input.validation.js";
+} from "../../auth/validation/register-input.validation.js";
 
 interface CreateUserPropType {
   name: string;
