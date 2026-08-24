@@ -5,6 +5,7 @@ import type {
   DesignationType,
   UserRoleType,
 } from "../../auth/validation/register-input.validation.js";
+import type { QueryType } from "../../types/types.js";
 
 interface CreateUserPropType {
   name: string;
@@ -22,7 +23,6 @@ interface RegisterUser extends CreateUserInput {
 }
 
 export class UserService {
-  
   async findUserByEmail(email: string): Promise<RegisterUser> {
     try {
       const existEmail = await prisma.user.findFirst({
@@ -54,7 +54,7 @@ export class UserService {
     role,
     password,
     designation,
-    avatar
+    avatar,
   }: CreateUserPropType): Promise<RegisterUser> {
     try {
       const createdUser = await prisma.user.create({
@@ -68,7 +68,7 @@ export class UserService {
         },
       });
       return createdUser;
-    } catch (error:unknown) {
+    } catch (error: unknown) {
       console.error(error);
       throw new ApiErrorHandler(
         400,
@@ -118,13 +118,63 @@ export class UserService {
     }
   }
 
-  async deleteUser({id}:{id:string}):Promise<void>{
+  async deleteUser({ id }: { id: string }): Promise<void> {
     try {
-      const response = await prisma.user.delete({where: {id: id}})
-      return response
+      const response = await prisma.user.delete({ where: { id: id } });
+      return response;
     } catch (error) {
-      console.error(error)
-      throw Error
+      console.error(error);
+      throw Error;
+    }
+  }
+
+  async userListByTeam({ page, limit, search, sortType, sortBy }: QueryType) {
+    try {
+      const response = await prisma.teamMember.findMany({
+        include: {
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+              role: true,
+              designation: true,
+            },
+          },
+        },
+      });
+
+      // Group by team in JS
+      const grouped = response.reduce(
+        (acc: any, current: any) => {
+          const teamId = current.teamId;
+          if (!acc[teamId]) {
+            acc[teamId] = {
+              teamId: current.team.id,
+              teamName: current.team.name,
+              members: [],
+            };
+          }
+          acc[teamId].members.push(current.user);
+          return acc;
+        },
+        {} as Record<
+          string,
+          { teamId: string; teamName: string; members: any[] }
+        >,
+      );
+
+      return Object.values(grouped);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      throw error;
     }
   }
 }
