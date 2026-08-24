@@ -14,13 +14,13 @@ sideContentRouter.get(
 sideContentRouter.post(
   "/side-content/privacy-policy",
   authVerify,
-  RestrictTo("ADMIN"),
+  // RestrictTo("ADMIN"),
   PrivacyPolicyController,
 );
 sideContentRouter.patch(
   "/side-content/privacy-policy/:privacyId",
   authVerify,
-  RestrictTo("ADMIN"),
+  // RestrictTo("ADMIN"),
   UpdatePrivacyPolicyController,
 );
 
@@ -28,13 +28,13 @@ sideContentRouter.patch(
 sideContentRouter.post(
   "/side-content/about-us",
   authVerify,
-  RestrictTo("ADMIN"),
+  // RestrictTo("ADMIN"),
   createAboutUsController
 );
 sideContentRouter.post(
   "/side-content/about-us/:id",
   authVerify,
-  RestrictTo("ADMIN"),
+  // RestrictTo("ADMIN"),
   UpdateAboutUsController,
 );
 sideContentRouter.get(
@@ -46,13 +46,13 @@ sideContentRouter.get(
 sideContentRouter.post(
   "/side-content/terms-and-condition",
   authVerify,
-  RestrictTo("ADMIN"),
+  // RestrictTo("ADMIN"),
   termsAndConditionController
 );
 sideContentRouter.post(
   "/side-content/terms-and-condition/:id",
   authVerify,
-  RestrictTo("ADMIN"),
+  // RestrictTo("ADMIN"),
   UpdateTermsAndConditionController,
 );
 sideContentRouter.get(

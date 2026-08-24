@@ -3,14 +3,16 @@ import { ApiErrorHandler } from "../../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../../shared/asyncHandler.js";
 import { CloudinaryFileUpload } from "../../../../shared/cloudinary.js";
-import { FindUser } from "../../../../utils/user/user.js";
 import { updateUserSchema, type UpdateUserInput } from "../schema/update-user-profile.schema.js";
+import { UserService } from "../service/user.service.js";
 
 export const UpdateUserProfileController = asyncHandler(async (req, res) => {
   const userId = req.user?.id;
   if (!userId) throw new ApiErrorHandler(401, "Unauthorized");
 
-  const user = await FindUser(userId);
+  const userService = new UserService()
+
+  const user = await userService.findUserById(userId)
   if (!user) throw new ApiErrorHandler(404, "User not found");
 
   // 1. Upload to Cloudinary FIRST if a file exists

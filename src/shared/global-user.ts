@@ -1,4 +1,4 @@
-import type { UserRoleType } from "../API/auth/user.type.js";
+import type { UserRole } from "../API/auth/validation/register-input.validation.js";
 
 
 
@@ -8,7 +8,7 @@ declare global {
       user?: {
         id: string;
         email: string;
-        role: UserRoleType;
+        role: UserRole;
       };
     }
   }

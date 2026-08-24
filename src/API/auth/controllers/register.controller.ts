@@ -4,9 +4,10 @@ import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { sendEmailService } from "../../../config/send-mail.js";
 import redis from "../../../config/redis.js";
-import { prisma } from "../../../lib/prisma.js";
 import { AuthService } from "../service/register.service.js";
 import { RegisterInputSchema } from "../validation/register-input.validation.js";
+import { UserService } from "../../user/self/service/user.service.js";
+import { CloudinaryFileUpload } from "../../../shared/cloudinary.js";
 
 
 export const registerController = asyncHandler(async (req, res) => {
@@ -23,7 +24,9 @@ export const registerController = asyncHandler(async (req, res) => {
 
   // check email exist or not
   const authService = new AuthService();
-  const existEmail = await authService.findUserByEmail(email)
+  const userService = new UserService();
+
+  const existEmail = await userService.findUserByEmail(email)
   if (existEmail) throw new ApiErrorHandler(404, "user already created");
 
   // save in redis
@@ -33,23 +36,27 @@ export const registerController = asyncHandler(async (req, res) => {
   });
 
   // set in queue
-  await sendEmailService({
-    to: email,
-    subject: "verify Email",
-    otp: `${otp}`,
-  });
+  // await sendEmailService({
+  //   to: email,
+  //   subject: "verify Email",
+  //   otp: `${otp}`,
+  // });
 
   // hash password
   const hashPass = await authService.hashPassword(password);
   if (!hashPass) throw new ApiErrorHandler(500, "failed to hash password");
 
+  // upload in cloudinary
+  const avatarURL = await CloudinaryFileUpload(avatar)
+
   // create user
-  await authService.createUser({
+  await userService.createUser({
     name,
     email,
     role: role ?? "EMPLOYEE",
     password: hashPass,
     designation: designation ?? "",
+    avatar: avatarURL ?? null,
   })
 
   //response

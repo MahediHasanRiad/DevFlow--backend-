@@ -1,4 +1,3 @@
-import { prisma } from "../../../lib/prisma.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 
@@ -7,14 +6,14 @@ export const logoutController = asyncHandler(
     const { token } = req.body; // FCM token from frontend
     const userId = req.user?.id;
 
-    if (token && userId) {
-      await prisma.deviceToken.deleteMany({
-        where: {
-          token: token,
-          userId: userId,
-        },
-      });
-    }
+    // if (token && userId) {
+    //   await prisma.deviceToken.deleteMany({
+    //     where: {
+    //       token: token,
+    //       userId: userId,
+    //     },
+    //   });
+    // }
 
     // Clear session cookies and send response
     res

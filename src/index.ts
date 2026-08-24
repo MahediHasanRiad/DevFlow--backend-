@@ -1,24 +1,21 @@
 import express from "express";
-import 'dotenv/config';
+import "dotenv/config";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { globalErrorHandler } from './shared/global-error-handler.js';
-import { connectRedis } from './config/redis.js';
-import { authRouter } from './API/auth/routers/user.router.js';
-
-
+import { globalErrorHandler } from "./shared/global-error-handler.js";
+import { connectRedis } from "./config/redis.js";
+import { authRouter } from "./API/auth/routers/user.router.js";
 
 const app = express();
 
 // Global Middlewares
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-    ],
+    origin: ["http://localhost:5173"],
     credentials: true,
   }),
 );
+
 
 
 app.use(express.json());
@@ -26,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Root Health Check Route
-console.log('url', process.env.DIRECT_URL)
+console.log("url", process.env.DIRECT_URL);
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -41,8 +38,6 @@ app.get("/health", (req, res) => {
 
 // Routers
 app.use("/auth", authRouter);
-
-
 
 // Global Error Handler
 app.use(globalErrorHandler);

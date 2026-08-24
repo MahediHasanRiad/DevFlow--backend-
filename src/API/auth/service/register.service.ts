@@ -1,91 +1,80 @@
 import type {
-  DesignationType,
-  UserRoleType,
+  CreateUserInput,
 } from "../validation/register-input.validation.js";
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import bcrypt from "bcrypt";
 
-interface CreateUserPropType {
-  name: string;
-  email: string;
-  role: UserRoleType;
-  password: string;
-  designation: DesignationType;
-}
-
-interface UpdateUser extends CreateUserPropType {
-  id: string;
+interface RegisterUser extends CreateUserInput {
+  id: string
+  emailVerified: boolean
+  refreshToken: string
 }
 
 export class AuthService {
   constructor() {}
 
-  async ExitEmail(email: string) {
+  async ExitEmail(email: string): Promise<RegisterUser> {
     try {
       const existEmail = await prisma.user.findFirst({ where: { email } });
       if (existEmail) throw new ApiErrorHandler(400, "User already Exist !!!");
       return existEmail;
     } catch (error) {
-      console.error(error);
+      throw error;
     }
   }
 
-  async hashPassword(password: string) {
+  async hashPassword(password: string): Promise<string> {
     try {
       const hashPass = await bcrypt.hash(password, 10);
       return hashPass;
     } catch (error) {
-      console.error(error);
+      throw error;
     }
   }
 
-  async findUserByEmail(email: string) {
-    try {
-      const existEmail = await prisma.user.findFirst({
-        where: { AND: [{ email }, { emailVerified: true }] },
-      });
-      if (!existEmail) throw new ApiErrorHandler(404, "User not found");
-      return existEmail;
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async createUser({
-    name,
-    email,
-    role,
+  async verifyHashPassword({
+    hashPassword,
     password,
-    designation,
-  }: CreateUserPropType) {
+  }: {
+    hashPassword: string;
+    password: string;
+  }): Promise<boolean> {
     try {
-      await prisma.user.create({
-        data: {
-          name,
-          email,
-          role: role ?? "USER",
-          password: password,
-          designation,
-        },
-      });
+      const hashPass = await bcrypt.compare(hashPassword, password);
+      return hashPass;
     } catch (error) {
-      console.error(error);
+      throw error;
     }
   }
 
-  async updateUserVerification({
-    id,
-    refreshToken
-  }: {id: string, refreshToken: string}) {
+  async updateRefreshToken({id, refreshToken}: {id: string, refreshToken: string}) {
     try {
-      const updated = await prisma.user.update({
+      const response = await prisma.user.update({
         where: { id: id },
-        data: { verified: true, refreshToken: refreshToken },
+        data: { refreshToken },
       });
-      return updated;
+      return response
     } catch (error) {
-      console.error(error);
+      console.log(error);
+    }
+  }
+
+  async deleteDeviceToken(){
+    try {
+      
+    } catch (error) {
+      console.error(error)
+      throw Error
+    }
+  }
+
+  async updatePassword({id, hashPass}: {id: string, hashPass: string}): Promise<void>{
+    try {
+      const response = await prisma.user.update({where: {id: id}, data: {password: hashPass}})
+    } catch (error) {
+      console.log(error)
+      throw Error
     }
   }
 }

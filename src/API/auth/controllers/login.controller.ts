@@ -1,11 +1,11 @@
 import type { CookieOptions } from "express";
-import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { generateToken } from "../../../shared/generate-token.js";
 import { LoginInputSchema } from "../validation/login-input.validation.js";
-import bcrypt from "bcrypt";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
+import { AuthService } from "../service/register.service.js";
+import { UserService } from "../../user/self/service/user.service.js";
 
 export const loginController = asyncHandler(async (req, res) => {
   // 1. Validate Input
@@ -13,36 +13,24 @@ export const loginController = asyncHandler(async (req, res) => {
   const { email, password, deviceToken } = loginValue;
 
   const normalizedEmail = email.trim().toLowerCase();
+  const authService = new AuthService();
+  const userService = new UserService();
 
   // 2. Find User
-  const user = await prisma.user.findFirst({
-    where: {
-      email: normalizedEmail,
-      // verified: true,
-    },
-  });
+  const user = await userService.findUserByEmail(normalizedEmail);
 
   if (!user)
     throw new ApiErrorHandler(404, "User not found or email not verified !");
-
-  // 3. Find Professional profile if present
-  const professional = await prisma.professional.findFirst({
-    where: { userId: user.id },
-  });
-
-  let employee = null;
-  if(user.role === 'EMPLOYEE'){
-    employee = await prisma.employee.findFirst({
-    where: { userId: user.id },
-  });
-  }
 
   // 4. Verify Password
   if (!user.password) {
     throw new ApiErrorHandler(400, "Invalid Credential");
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await authService.verifyHashPassword({
+    hashPassword: password,
+    password: user?.password,
+  });
   if (!isPasswordValid) {
     throw new ApiErrorHandler(400, "Invalid Credential");
   }
@@ -51,10 +39,7 @@ export const loginController = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateToken(user.id);
 
   // 6. Update Refresh Token in DB
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { refreshToken },
-  });
+  await authService.updateRefreshToken({id:user?.id, refreshToken})
 
   // 7. Cookie Options
   const cookieOptions: CookieOptions = {
@@ -65,25 +50,14 @@ export const loginController = asyncHandler(async (req, res) => {
   };
 
   // 8. Strip sensitive credentials from user object
-  const { password: _, refreshToken: __, ...userWithoutPassword } = user;
+  const { password: _, ...userWithoutPassword } = user;
 
   // 9. Build clean, flat JSON payload
   const responseData = {
     user: userWithoutPassword,
-    professional: professional ?? null, // always present, explicit null if none
-    employee: employee ?? null,
     accessToken,
     refreshToken,
   };
-
-  // save device token
-  // await prisma.deviceToken.create({
-  //   data: {
-  //     token: deviceToken,
-  //     userId: user?.id
-  //   }
-  // })
-
 
   // 10. Single Clean Response
   res

@@ -45,7 +45,7 @@ export const RegisterInputSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: UserRoleSchema.optional().default("EMPLOYEE"),
   designation: DesignationSchema,
-  avatar: z.string().url("Avatar must be a valid URL").optional().nullable(),
+  avatar: z.custom<Express.Multer.File>().optional().nullable(),
 });
 
 export type CreateUserInput = z.infer<typeof RegisterInputSchema>;

@@ -5,8 +5,8 @@ export const ResetPassSchema = z
     oldPassword: z.string().min(1, { message: "Old password is required !!!" }),
     newPassword: z
       .string()
-      .min(6, {
-        message: "New password must be at least 6 characters long !!!",
+      .min(8, {
+        message: "New password must be at least 8 characters long !!!",
       }),
     confirmPassword: z
       .string()

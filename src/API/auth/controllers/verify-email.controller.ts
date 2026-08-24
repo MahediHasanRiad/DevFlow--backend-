@@ -4,10 +4,11 @@ import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { generateToken } from "../../../shared/generate-token.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
-import { AuthService } from "../service/register.service.js";
+import { UserService } from "../../user/self/service/user.service.js";
 
 export const VerifyEmailController = asyncHandler(async (req, res) => {
-  const authService = new AuthService();
+
+  const userService = new UserService();
 
   const { otp, email } = req.body;
   if (!otp) throw new ApiErrorHandler(404, "OTP not found");
@@ -18,14 +19,14 @@ export const VerifyEmailController = asyncHandler(async (req, res) => {
   if (otp !== getOTP)
     throw new ApiErrorHandler(400, "Invalid OTP or expired !!!");
 
-  const verifyEmail = await authService.findUserByEmail(email);
+  const verifyEmail = await userService.findUserByEmail(email);
   if (!verifyEmail) throw new ApiErrorHandler(400, "Invalid email");
 
   // generate token
   const { accessToken, refreshToken } = await generateToken(verifyEmail.id);
 
   // update verification
-  const user = await authService.updateUserVerification({
+  const user = await userService.updateUserVerification({
     id: verifyEmail.id,
     refreshToken,
   });

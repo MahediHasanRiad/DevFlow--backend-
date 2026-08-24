@@ -1,13 +1,16 @@
 import { ApiErrorHandler } from "../../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../../shared/asyncHandler.js";
-import { FindUser } from "../../../../utils/user/user.js";
+import { AuthService } from "../../../auth/service/register.service.js";
+import { UserService } from "../service/user.service.js";
 
-export const MyProfileController = asyncHandler(async(req, res) => {
-    const userId = req.user?.id as string
-    if(!userId) throw new ApiErrorHandler(401, 'unauthorized')
+export const MyProfileController = asyncHandler(async (req, res) => {
+  const userId = req.user?.id as string;
+  if (!userId) throw new ApiErrorHandler(401, "unauthorized");
 
-    const user = await FindUser(userId)
+  const userService = new UserService();
 
-    res.status(200).json(new apiResponse(user, 'success'))
-})
+  const user = await userService.findUserById(userId);
+
+  res.status(200).json(new apiResponse(user, "success"));
+});

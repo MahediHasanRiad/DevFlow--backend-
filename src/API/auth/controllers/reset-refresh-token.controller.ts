@@ -1,10 +1,14 @@
 import type { CookieOptions } from "express";
-import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { generateToken } from "../../../shared/generate-token.js";
+import { AuthService } from "../service/register.service.js";
+import { UserService } from "../../user/self/service/user.service.js";
 
 export const resetRefreshTokenController = asyncHandler(async (req, res) => {
+
+  const authService = new AuthService()
+  const userService = new UserService()
 
     // incoming refresh token
   const incomingRefreshToken =
@@ -24,10 +28,7 @@ export const resetRefreshTokenController = asyncHandler(async (req, res) => {
   }
 
   // 3. Find user by ID
-  const user = await prisma.user.findFirst({
-    where: { id: userId },
-    select: { id: true, refreshToken: true },
-  });
+  const user = await userService.findUserById(userId)
 
   if (!user) {
     throw new ApiErrorHandler(
@@ -36,11 +37,8 @@ export const resetRefreshTokenController = asyncHandler(async (req, res) => {
     );
   }
 
-  console.log('a', user.refreshToken)
-  console.log('b', incomingRefreshToken)
-
   // 4. Compare the incoming token with the one saved in the database
-  if (user.refreshToken !== incomingRefreshToken) {
+  if (user?.refreshToken !== incomingRefreshToken) {
     throw new ApiErrorHandler(
       403,
       "Refresh token is invalid or has expired !!!",
@@ -53,10 +51,7 @@ export const resetRefreshTokenController = asyncHandler(async (req, res) => {
   );
 
   // 6. Update ONLY the refresh token in the database
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { refreshToken: newRefreshToken },
-  });
+  await authService.updateRefreshToken({id:user.id, refreshToken:newRefreshToken})
 
   const cookieOptions: CookieOptions = {
     httpOnly: true,

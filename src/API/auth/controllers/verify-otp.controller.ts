@@ -4,43 +4,30 @@ import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { prisma } from "../../../lib/prisma.js";
+import { AuthService } from "../service/register.service.js";
+import { UserService } from "../../user/self/service/user.service.js";
+
 
 
 export const VerifyOTPController = asyncHandler(async(req, res) => {
+
+    const userService = new UserService()
+
     const {otp, email} = req.body
     if(!otp) throw new ApiErrorHandler(404, 'OTP not found')
     if(!email) throw new ApiErrorHandler(404, 'email not found')
+
 
     // verify OTP
     const getOTP = await redis.get(`otp:${email}`)
     if(getOTP !== otp) throw new ApiErrorHandler(403, 'Invalid OTP or Expired !!!')
 
     // 3. Find user in Database
-    const user = await prisma.user.findFirst({
-      where: { AND: [{ email: email }] },
-    });
+    const user = await userService.findUserByEmail(email)
     if (!user) throw new ApiErrorHandler(404, "User not found");
 
     // 4. Update user verification status
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: { emailVerified: true },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        contact: true,
-        avatar: true,
-        role: true,
-        taken_services: true,
-        longitude: true,
-        latitude: true,
-        address: true,
-        bio: true,
-        rating: true,
-      },
-    });
+    const updatedUser = await userService.updateUserEmailVerification({id:user?.id})
 
     // 5. Delete OTP from Redis after success
     await redis.del(`otp:${email}`);
@@ -51,6 +38,7 @@ export const VerifyOTPController = asyncHandler(async(req, res) => {
         id: updatedUser.id,
         name: updatedUser.name,
         role: updatedUser.role,
+        designation: updatedUser.designation
       },
       process.env.ACCESS_TOKEN_SECRET_KEY || "",
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_DATE || "7d" } as any,
