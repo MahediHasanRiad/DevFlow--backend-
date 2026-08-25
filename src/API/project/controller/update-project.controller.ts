@@ -23,6 +23,7 @@ export const UpdateProjectController = asyncHandler(async (req, res) => {
     completedMileStone,
     amount,
     receivedAmount,
+    teamId
   } = UpdateProjectInputSchema.parse(req.body);
 
   const updatedData:UpdateProjectInputType = {}
@@ -37,6 +38,7 @@ export const UpdateProjectController = asyncHandler(async (req, res) => {
   if(completedMileStone !== undefined) updatedData.completedMileStone = completedMileStone ?? project.completedMileStone
   if(amount !== undefined) updatedData.amount = amount ?? project.amount
   if(receivedAmount !== undefined) updatedData.receivedAmount = receivedAmount ?? project.receivedAmount
+  if(teamId !== undefined) updatedData.teamId = teamId ?? project.teamId
 
 
   // update

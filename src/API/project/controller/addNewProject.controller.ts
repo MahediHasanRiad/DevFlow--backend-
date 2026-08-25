@@ -21,6 +21,7 @@ export const addNewProjectController = asyncHandler(async (req, res) => {
     completedMileStone,
     amount,
     receivedAmount,
+    teamId
   } = CreateProjectInputSchema.parse(req.body);
 
   const projectService = new ProjectService();
@@ -38,6 +39,7 @@ export const addNewProjectController = asyncHandler(async (req, res) => {
     completedMileStone,
     amount,
     receivedAmount,
+    teamId
   });
 
   res.status(201).json(new apiResponse(project, 'Success'))

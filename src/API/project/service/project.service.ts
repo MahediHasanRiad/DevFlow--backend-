@@ -32,6 +32,7 @@ export class ProjectService {
     completedMileStone,
     amount,
     receivedAmount,
+    teamId
   }: AddNewProjectProp): Promise<ProjectType> {
     try {
       const response = await prisma.project.create({
@@ -47,6 +48,7 @@ export class ProjectService {
           completedMileStone,
           amount,
           receivedAmount,
+          teamId
         },
       });
       return response;
