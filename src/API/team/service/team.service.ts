@@ -1,14 +1,12 @@
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import type {
-  Designation,
   QueryType,
   TeamMemberType,
 } from "../../types/types.js";
 import type {
   CreateTeamInput,
   TeamType,
-  UpdateTeamType,
 } from "../schema/team.schema.js";
 
 interface UpdateTeamProp {

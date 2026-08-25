@@ -7,6 +7,7 @@ import { connectRedis } from "./config/redis.js";
 import { authRouter } from "./API/auth/routers/user.router.js";
 import { userSelfRouter } from "./API/user/router/user-self.router.js";
 import { teamRouter } from "./API/team/router/team.router.js";
+import { teamMemberRouter } from "./API/team-member/router/teamMember.router.js";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.get("/health", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/user", userSelfRouter);
 app.use("/team", teamRouter);
+app.use("/team-member", teamMemberRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);
