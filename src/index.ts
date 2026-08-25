@@ -8,6 +8,7 @@ import { authRouter } from "./API/auth/routers/user.router.js";
 import { userSelfRouter } from "./API/user/router/user-self.router.js";
 import { teamRouter } from "./API/team/router/team.router.js";
 import { teamMemberRouter } from "./API/team-member/router/teamMember.router.js";
+import { projectRouter } from "./API/project/router/project.router.js";
 
 const app = express();
 
@@ -26,7 +27,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Root Health Check Route
-console.log("url", process.env.DIRECT_URL);
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -44,6 +44,7 @@ app.use("/auth", authRouter);
 app.use("/user", userSelfRouter);
 app.use("/team", teamRouter);
 app.use("/team-member", teamMemberRouter);
+app.use("/project", projectRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);
