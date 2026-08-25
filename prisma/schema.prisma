@@ -120,9 +120,8 @@ model User {
 
   refreshToken String?
 
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   createdTeams Team[]       @relation("TeamCreatedBy")
   teamMembers  TeamMember[]

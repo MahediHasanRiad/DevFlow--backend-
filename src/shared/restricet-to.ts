@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { ApiErrorHandler } from "./apiErrorHandler.js";
 
-type RoleType = "USER";
+type RoleType = "EMPLOYEE" | "PROJECT_MANAGER" | "ADMIN" ;
 
 export const RestrictTo = (...allowedRoles: RoleType[]) => {
   return (req: Request, res: Response, next: NextFunction) => {

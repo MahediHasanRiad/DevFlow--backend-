@@ -6,6 +6,7 @@ import { globalErrorHandler } from "./shared/global-error-handler.js";
 import { connectRedis } from "./config/redis.js";
 import { authRouter } from "./API/auth/routers/user.router.js";
 import { userSelfRouter } from "./API/user/router/user-self.router.js";
+import { teamRouter } from "./API/team/router/team.router.js";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.get("/health", (req, res) => {
 // Routers
 app.use("/auth", authRouter);
 app.use("/user", userSelfRouter);
+app.use("/team", teamRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);
