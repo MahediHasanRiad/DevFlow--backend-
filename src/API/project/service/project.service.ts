@@ -15,6 +15,10 @@ export interface UpdateProjectProp {
   updatedData: UpdateProjectInputType;
 }
 
+interface allProjectListByTeamPropType extends QueryType {
+  teamId: string;
+}
+
 export class ProjectService {
   async AddNewProject({
     createdById,
@@ -143,7 +147,46 @@ export class ProjectService {
       return response;
     } catch (error) {
       console.error(error);
-      throw error; 
+      throw error;
+    }
+  }
+
+  async allProjectListByTeam({
+    page = 1,
+    limit = 10,
+    sortBy = "desc",
+    sortType = "updatedAt",
+    search = "",
+    teamId,
+  }: allProjectListByTeamPropType): Promise<any[]> {
+    try {
+      const skip = (Math.max(1, page) - 1) * limit;
+
+      const response = await prisma.project.findMany({
+        where: {
+          teamId: teamId,
+          name: { contains: search.trim(), mode: "insensitive" },
+        },
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              role: true,
+            },
+          },
+        },
+        orderBy: {
+          [sortType]: sortBy,
+        },
+        skip,
+        take: limit,
+      });
+
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   }
 }

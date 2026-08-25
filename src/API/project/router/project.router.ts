@@ -6,9 +6,15 @@ import { UpdateProjectController } from "../controller/update-project.controller
 import { FindAProjectController } from "../controller/find-a-project.controller.js";
 import { DeleteAProjectController } from "../controller/delete-a-project.controller.js";
 import { allProjectsController } from "../controller/all-projects.controller.js";
+import { allProjectsByTeamController } from "../controller/all-projects-by-team.controller.js";
 
 const projectRouter = Router();
 
+projectRouter.get(
+  "/all-projects-by-team/:teamId",
+  authVerify,
+  allProjectsByTeamController,
+);
 projectRouter.get(
   "/all-projects",
   authVerify,
