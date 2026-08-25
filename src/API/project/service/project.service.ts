@@ -1,9 +1,17 @@
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import type { ProjectType } from "../schema/project.schema.js";
+import type {
+  ProjectType,
+  UpdateProjectInputType,
+} from "../schema/project.schema.js";
 
 interface AddNewProjectProp extends ProjectType {
   createdById: string;
+}
+
+export interface UpdateProjectProp {
+  id: string;
+  updatedData: UpdateProjectInputType;
 }
 
 export class ProjectService {
@@ -19,7 +27,7 @@ export class ProjectService {
     completedMileStone,
     amount,
     receivedAmount,
-  }: AddNewProjectProp):Promise<ProjectType> {
+  }: AddNewProjectProp): Promise<ProjectType> {
     try {
       const response = await prisma.project.create({
         data: {
@@ -36,7 +44,41 @@ export class ProjectService {
           receivedAmount,
         },
       });
-      return response
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async UpdateProject({
+    id,
+    updatedData,
+  }: UpdateProjectProp): Promise<ProjectType> {
+    try {
+      const response = await prisma.project.update({
+        where: { id: id },
+        data: updatedData,
+      });
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async findAProjectById(projectId: string) {
+    try {
+      const response = await prisma.project.findFirst({
+        where: { id: projectId },
+      });
+      return response;
     } catch (error) {
       console.error(error);
       throw new ApiErrorHandler(
