@@ -94,4 +94,45 @@ export class TeamMemberService {
       );
     }
   }
+
+  async deleteTeamMember(memberId: string): Promise<void> {
+    try {
+      await prisma.teamMember.delete({
+        where: { id: memberId },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async listOfMembersByTeam(teamId: string): Promise<TeamMemberType[]> {
+    try {
+      const response = await prisma.teamMember.findMany({
+        where: { teamId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              contact: true,
+              role: true,
+              designation: true,
+            },
+          },
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
 }
