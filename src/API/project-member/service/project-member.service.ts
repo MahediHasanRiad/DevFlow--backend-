@@ -69,6 +69,20 @@ export class ProjectMemberService {
     }
   }
 
+  async deleteProjectMemberById(memberId: string): Promise<void> {
+    try {
+      await prisma.projectMember.delete({
+        where: { id: memberId },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
   async AddNewProjectMember({
     projectId,
     userId,
@@ -97,8 +111,16 @@ export class ProjectMemberService {
   ): Promise<ProjectMemberType[]> {
     try {
       const response = await prisma.projectMember.findMany({
-        where: { projectId },
+        where: { projectId:projectId },
+        include: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
       });
+
       return response;
     } catch (error) {
       console.error(error);
