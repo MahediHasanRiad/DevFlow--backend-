@@ -1,5 +1,4 @@
 import { asyncHandler } from "../../../shared/asyncHandler.js";
-import { randomUUID } from "node:crypto";
 import { CreateProjectInputSchema } from "../schema/project.schema.js";
 import { ProjectService } from "../service/project.service.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
