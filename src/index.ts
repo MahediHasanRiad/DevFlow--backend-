@@ -9,6 +9,7 @@ import { userSelfRouter } from "./API/user/router/user-self.router.js";
 import { teamRouter } from "./API/team/router/team.router.js";
 import { teamMemberRouter } from "./API/team-member/router/teamMember.router.js";
 import { projectRouter } from "./API/project/router/project.router.js";
+import { projectMemberRouter } from "./API/project-member/router/projectMember.router.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/user", userSelfRouter);
 app.use("/team", teamRouter);
 app.use("/team-member", teamMemberRouter);
 app.use("/project", projectRouter);
+app.use("/project-member", projectMemberRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);

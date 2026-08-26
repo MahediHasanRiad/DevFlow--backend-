@@ -14,6 +14,10 @@ interface findTeamMemberProp {
   teamId: string;
   userId: string;
 }
+interface userExistThisTeamProp {
+  userId: string;
+  teamId: string;
+}
 
 export class TeamMemberService {
   async addNewTeamMember({
@@ -125,6 +129,24 @@ export class TeamMemberService {
             },
           },
         },
+      });
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
+  async userExistThisTeam({
+    userId,
+    teamId,
+  }: userExistThisTeamProp): Promise<TeamMemberType> {
+    try {
+      const response = await prisma.teamMember.findFirst({
+        where: { AND: [{ userId: userId }, { teamId: teamId }] },
       });
       return response;
     } catch (error) {
