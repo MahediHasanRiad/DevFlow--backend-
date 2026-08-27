@@ -1,6 +1,7 @@
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { prisma } from "../../../lib/prisma.js";
-import type { CreateDailyPlanRequestInputType, DailyPlanRequestStatusType, DailyPlanRequestType } from "../schema/dailyPlanRequest.schema.js";
+import type { DailyPlanRequestStatusType, DailyPlanRequestType } from "../schema/dailyPlanRequest.schema.js";
+
 
 export interface CreateDailyPlanRequestData {
     userId: string;
@@ -63,14 +64,13 @@ export class DailyPlanRequestService {
         }
     }
 
-    async updateADailyPlanRequest(id: string, task?: string, note?: string, status?: DailyPlanRequestStatusType): Promise<DailyPlanRequestType> {
+    async updateADailyPlanRequest(id: string, task?: string, note?: string | null): Promise<DailyPlanRequestType> {
         try {
             const response = await prisma.dailyPlanRequest.update({
                 where: { id },
                 data: {
-                    ...(task && { task }),
-                    ...(note && { note }),
-                    ...(status && { status }),
+                    ...(task !== undefined && { task }),
+                    ...(note !== undefined && { note }),
                 }
             })
             return response
@@ -83,7 +83,23 @@ export class DailyPlanRequestService {
         }
     }
 
-    async getDailyPlanRequestByDate(date: string | Date) {
+    async updateDailyPlanRequestStatus(id: string, status: DailyPlanRequestStatusType): Promise<DailyPlanRequestType> {
+        try {
+            const response = await prisma.dailyPlanRequest.update({
+                where: { id },
+                data: { status: status },
+            })
+            return response
+        } catch (error) {
+            console.error(error);
+            throw new ApiErrorHandler(
+                400,
+                error instanceof Error ? error.message : String(error),
+            );
+        }
+    }
+
+    async getDailyPlanRequestByDate(date: string | Date):Promise<DailyPlanRequestType[]> {
         try {
             const parsedDate = new Date(date);
             if (isNaN(parsedDate.getTime())) {

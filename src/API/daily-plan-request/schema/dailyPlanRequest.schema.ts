@@ -80,6 +80,7 @@ export const UpdateDailyPlanRequestInputSchema = z.object({
     .trim()
     .max(1000, "Note cannot exceed 1000 characters")
     .optional()
+    .nullable(),
 });
 
 export type UpdateDailyPlanRequestInputType = z.infer<
@@ -89,5 +90,17 @@ export type UpdateDailyPlanRequestInputType = z.infer<
 // CamelCase aliases
 export const updateDailyPlanRequestSchema = UpdateDailyPlanRequestInputSchema;
 export type UpdateDailyPlanRequestInput = UpdateDailyPlanRequestInputType;
+
+// ==========================================
+// Update DailyPlanRequest Status Schema
+// ==========================================
+export const UpdateDailyPlanRequestStatusSchema = z.object({
+  status: DailyPlanRequestStatusEnum,
+});
+
+export type UpdateDailyPlanRequestStatusInputType = z.infer<
+  typeof UpdateDailyPlanRequestStatusSchema
+>;
+export const updateDailyPlanRequestStatusSchema = UpdateDailyPlanRequestStatusSchema;
 
 

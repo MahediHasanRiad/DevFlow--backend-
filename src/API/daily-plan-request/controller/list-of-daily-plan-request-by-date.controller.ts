@@ -11,7 +11,8 @@ export const getAllDailyPlanRequestByDateController = asyncHandler(async (req, r
     // get from redis
     const data = await redis.get(`dailyPlanRequest:${date}`)
     if (data) {
-     res.status(200).json(new apiResponse(JSON.parse(data), 'Daily plan request found successfully'))
+        res.status(200).json(new apiResponse(JSON.parse(data), 'Daily plan request found successfully'));
+        return;
     }
 
     const dailyPlanRequestService = new DailyPlanRequestService()
