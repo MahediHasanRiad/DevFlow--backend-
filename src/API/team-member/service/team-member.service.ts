@@ -99,6 +99,21 @@ export class TeamMemberService {
     }
   }
 
+  async findTeamMemberByUserId(userId: string, teamId: string): Promise<TeamMemberType> {
+    try {
+      const response = await prisma.teamMember.findFirst({
+        where: { userId: userId, teamId:teamId },
+      });
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new ApiErrorHandler(
+        400,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }
+
   async deleteTeamMember(memberId: string): Promise<void> {
     try {
       await prisma.teamMember.delete({
