@@ -80,7 +80,6 @@ export const UpdateDailyPlanRequestInputSchema = z.object({
     .trim()
     .max(1000, "Note cannot exceed 1000 characters")
     .optional()
-    .nullable(),
 });
 
 export type UpdateDailyPlanRequestInputType = z.infer<
