@@ -11,7 +11,6 @@ export const initSocket = (app: any) => {
     cors: {
       origin: [
         "http://localhost:5173",
-        "https://topackubilaydashboard.maktechapp.cloud",
       ],
       methods: ["GET", "POST"],
       credentials: true,
