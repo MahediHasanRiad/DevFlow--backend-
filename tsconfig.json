@@ -16,7 +16,6 @@
     // "moduleResolution": "bundler",
     "target": "ESNext",
     "esModuleInterop": true,
-    "ignoreDeprecations": "6.0",
 
     // Other Outputs
     "sourceMap": true,

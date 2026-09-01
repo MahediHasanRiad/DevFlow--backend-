@@ -12,6 +12,7 @@ import { projectRouter } from "./API/project/router/project.router.js";
 import { projectMemberRouter } from "./API/project-member/router/projectMember.router.js";
 import { dailyPlanRequestRouter } from "./API/daily-plan-request/router/dailyPlanRequest.router.js";
 import dailyPlanRouter from "./API/daily-plan/router/daily-plan.router.js";
+import { chatRouter } from "./API/chat/router/chat.router.js";
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use("/project", projectRouter);
 app.use("/project-member", projectMemberRouter);
 app.use("/daily-plan-request", dailyPlanRequestRouter);
 app.use("/daily-plan", dailyPlanRouter);
+app.use("/chat", chatRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);

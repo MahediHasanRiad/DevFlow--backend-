@@ -26,6 +26,8 @@ export const initSocket = (app: any) => {
       console.log(`⚡ Socket connected: ${socket.id} | User Room: ${userId}`);
     }
 
+    
+
     socket.on("disconnect", () => {
       console.log(`❌ Socket disconnected: ${socket.id}`);
     });

@@ -197,7 +197,7 @@ model Project {
 
   totalMileStone     Int
   completedMileStone Int @default(0)
-
+ 
   amount         Int
   receivedAmount Int @default(0)
 
