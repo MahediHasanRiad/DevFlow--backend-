@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import { sendEmailService } from "../../../config/send-mail.js";
 import redis from "../../../config/redis.js";
 import { AuthService } from "../service/register.service.js";
 import { RegisterInputSchema } from "../validation/register-input.validation.js";
@@ -20,7 +19,7 @@ export const registerController = asyncHandler(async (req, res) => {
 
   // input validation
   const inputValidation = RegisterInputSchema.parse(data);
-  const { name, email, role, password, designation } = inputValidation;
+  const { organizationId, name, email, role, password, designation } = inputValidation;
 
   // check email exist or not
   const authService = new AuthService();
@@ -35,12 +34,6 @@ export const registerController = asyncHandler(async (req, res) => {
     EX: 300,
   });
 
-  // set in queue
-  // await sendEmailService({
-  //   to: email,
-  //   subject: "verify Email",
-  //   otp: `${otp}`,
-  // });
 
   // hash password
   const hashPass = await authService.hashPassword(password);

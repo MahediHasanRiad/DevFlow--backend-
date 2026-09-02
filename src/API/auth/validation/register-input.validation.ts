@@ -25,6 +25,7 @@ export type DesignationType = z.infer<typeof DesignationSchema>;
 
 // Create User / Registration
 export const RegisterInputSchema = z.object({
+  organizationId: z.string().min(1, "Organization is required"),
   name: z
     .string()
     .trim()

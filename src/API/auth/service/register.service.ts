@@ -71,7 +71,7 @@ export class AuthService {
 
   async updatePassword({id, hashPass}: {id: string, hashPass: string}): Promise<void>{
     try {
-      const response = await prisma.user.update({where: {id: id}, data: {password: hashPass}})
+      await prisma.user.update({where: {id: id}, data: {password: hashPass}})
     } catch (error) {
       console.log(error)
       throw Error

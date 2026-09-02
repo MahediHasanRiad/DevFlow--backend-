@@ -11,12 +11,6 @@ datasource db {
 // ENUMS
 // ============================================================
 
-enum UserRole {
-  EMPLOYEE
-  PROJECT_MANAGER
-  ADMIN
-}
-
 enum Designation {
   UI_UX
   FRONTEND
@@ -107,12 +101,52 @@ enum AuditEntityType {
   MESSAGE
 }
 
+enum OrganizationRole {
+  EMPLOYEE
+  PROJECT_MANAGER
+  ADMIN
+}
+
+model Organization {
+  id   String  @id @default(uuid())
+  name String
+  slug String? @unique
+
+  userId              String?
+  createdBy   User?   @relation(fields: [userId], references: [id])
+
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  organizationMembers OrganizationMember[]
+}
+
+model OrganizationMember {
+  id String @id @default(uuid())
+
+  organizationId String
+  userId         String
+
+  role        OrganizationRole @default(EMPLOYEE)
+  designation Designation
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([role])
+  @@index([designation])
+}
+
 model User {
   id            String      @id @default(uuid())
   name          String
   email         String      @unique
   password      String
-  role          UserRole    @default(EMPLOYEE)
   designation   Designation
   contact       Int?
   avatar        String?
@@ -139,9 +173,10 @@ model User {
   conversationParticipants ConversationParticipant[]
   sentMessages             Message[]
 
-  auditLogs AuditLog[]
+  auditLogs           AuditLog[]
+  organizationMembers OrganizationMember[]
+  organizations       Organization[]
 
-  @@index([role])
   @@index([designation])
 }
 
@@ -197,7 +232,7 @@ model Project {
 
   totalMileStone     Int
   completedMileStone Int @default(0)
- 
+
   amount         Int
   receivedAmount Int @default(0)
 

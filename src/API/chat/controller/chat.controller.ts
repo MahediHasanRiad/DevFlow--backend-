@@ -11,7 +11,6 @@ export const createChatController = asyncHandler(async (req, res) => {
   }
 
   const { type, title, participantIds } = CreateChatInputSchema.parse(req.body);
-
   const chatService = new ChatService();
 
   const conversation = await chatService.createChat({
@@ -21,6 +20,7 @@ export const createChatController = asyncHandler(async (req, res) => {
     createdById: userId,
   });
 
+  
   res
     .status(201)
     .json(new apiResponse(conversation, "Conversation created successfully"));
