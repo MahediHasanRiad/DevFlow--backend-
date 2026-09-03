@@ -1,9 +1,16 @@
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import type { CreateOrganizationMemberInput, UpdateOrganizationMemberInput } from "../schema/organization.schema.js";
+import type { QueryType } from "../../types/types.js";
+import type {
+  CreateOrganizationMemberInput,
+  UpdateOrganizationMemberInput,
+} from "../schema/organization.schema.js";
+
+interface ListOfAllOrganizationMemberInput extends QueryType {
+  org_Id: string;
+}
 
 export class OrganizationMemberService {
-  
   async addNewMember({
     organizationId,
     userId,
@@ -34,9 +41,9 @@ export class OrganizationMemberService {
               email: true,
               avatar: true,
               contact: true,
-            }
-          }
-        }
+            },
+          },
+        },
       });
       return organizationMember;
     } catch (error: any) {
@@ -47,13 +54,17 @@ export class OrganizationMemberService {
     }
   }
 
-  async updateOrganizationMember({id, role, designation}: UpdateOrganizationMemberInput) {
+  async updateOrganizationMember({
+    id,
+    role,
+    designation,
+  }: UpdateOrganizationMemberInput) {
     try {
       const organizationMember = await prisma.organizationMember.update({
         where: {
           id,
         },
-        data:{
+        data: {
           role: role,
           designation: designation,
         },
@@ -67,15 +78,61 @@ export class OrganizationMemberService {
     }
   }
 
-  async deleteOrganizationMember(id:string){
-    try{
+  async deleteOrganizationMember(id: string) {
+    try {
       await prisma.organizationMember.delete({
-        where:{
+        where: {
           id,
-        }
-      })
-      return true
-    }catch(error: any){
+        },
+      });
+      return true;
+    } catch (error: any) {
+      throw new ApiErrorHandler(
+        error.statusCode || 500,
+        error.message || "Internal Server Error",
+      );
+    }
+  }
+
+  async listOfAllOrganizationMembers({
+    org_Id,
+    page = 1,
+    limit = 10,
+    sortBy = "desc",
+    sortType = "createdAt",
+    search = "",
+  }: ListOfAllOrganizationMemberInput) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const organizationMembers = await prisma.organizationMember.findMany({
+        where: {
+          organizationId: org_Id,
+          OR: [{ user: { name: { contains: search, mode: "insensitive" } } }],
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          [sortType]: sortBy,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              avatar: true,
+              contact: true,
+            },
+          },
+        },
+      });
+
+      const total = await prisma.organizationMember.count({
+        where: { organizationId: org_Id },
+      });
+      return { data: organizationMembers, total, page, limit };
+    } 
+    catch (error: any) {
       throw new ApiErrorHandler(
         error.statusCode || 500,
         error.message || "Internal Server Error",
