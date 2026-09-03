@@ -1,3 +1,4 @@
+import redis from "../../../config/redis.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
@@ -60,6 +61,11 @@ export const createTeamController = asyncHandler(async (req, res) => {
         createdById: user_Id,
         organizationId,
       });
+
+      // delete cash
+      await redis.del(`teams:${organizationId}:`)
+      
+
       res
         .status(201)
         .json(new apiResponse(addTeam, "successfully create a new Team"));

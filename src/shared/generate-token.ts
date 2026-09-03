@@ -11,8 +11,8 @@ interface TokenResponse {
 async function generateToken(id: string): Promise<TokenResponse> {
     try {
       
-        const user = await prisma.user.findUnique({ where: { id: id } });
-        const organizationMember = await prisma.organizationMember.findUnique({ where: { userId: id } });
+        const user = await prisma.user.findFirst({ where: { id: id } });
+        const organizationMember = await prisma.organizationMember.findFirst({ where: { userId: id } });
 
         if (!user) throw createError(404, "User not found for token generation !!!");
     

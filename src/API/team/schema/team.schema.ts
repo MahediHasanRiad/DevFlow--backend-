@@ -14,6 +14,7 @@ export const TeamSchema = z.object({
     .nullable()
     .optional(),
   createdById: z.string().uuid("Invalid creator user ID"),
+  organizationId: z.string().nullable().optional(),
 });
 
 export type TeamType = z.infer<typeof TeamSchema>;

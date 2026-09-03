@@ -113,8 +113,6 @@ export class TeamService {
               name: true,
               email: true,
               avatar: true,
-              role: true,
-              designation: true,
             },
           },
         },
