@@ -20,6 +20,7 @@ interface allProjectListByTeamPropType extends QueryType {
 }
 
 export class ProjectService {
+  
   async AddNewProject({
     createdById,
     name,
@@ -32,7 +33,8 @@ export class ProjectService {
     completedMileStone,
     amount,
     receivedAmount,
-    teamId
+    teamId,
+    organizationId
   }: AddNewProjectProp): Promise<ProjectType> {
     try {
       const response = await prisma.project.create({
@@ -48,7 +50,8 @@ export class ProjectService {
           completedMileStone,
           amount,
           receivedAmount,
-          teamId
+          teamId,
+          organizationId
         },
       });
       return response;
@@ -135,7 +138,6 @@ export class ProjectService {
             select: {
               id: true,
               name: true,
-              role: true,
             },
           },
         },
@@ -174,7 +176,6 @@ export class ProjectService {
             select: {
               id: true,
               name: true,
-              role: true,
             },
           },
         },
@@ -191,4 +192,5 @@ export class ProjectService {
       throw error;
     }
   }
+
 }

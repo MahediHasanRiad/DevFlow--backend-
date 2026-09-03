@@ -60,6 +60,7 @@ export const ProjectSchema = z.object({
     .default(0),
   createdById: z.string().uuid("Invalid creator user ID"),
   teamId: z.string(),
+  organizationId: z.string(),
 });
 
 export type ProjectType = z.infer<typeof ProjectSchema>;
@@ -92,6 +93,7 @@ export const CreateProjectInputSchema = z
     amount: z.number().int().min(0, "Amount must be a positive integer"),
     receivedAmount: z.number().int().min(0).optional().default(0),
     teamId: z.string(),
+    organizationId: z.string(),
   })
   .refine(
     (data) => {
@@ -142,6 +144,7 @@ export const UpdateProjectInputSchema = z
     amount: z.number().int().min(0).optional(),
     receivedAmount: z.number().int().min(0).optional(),
     teamId: z.string().optional(),
+    organizationId: z.string().optional(),
   })
   .refine(
     (data) => {

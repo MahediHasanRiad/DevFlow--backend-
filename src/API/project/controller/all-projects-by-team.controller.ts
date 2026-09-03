@@ -1,3 +1,4 @@
+import redis from "../../../config/redis.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
@@ -19,6 +20,16 @@ export const allProjectsByTeamController = asyncHandler(async (req, res) => {
   const teamId = req.params.teamId as string;
   if (!teamId) throw new ApiErrorHandler(404, "teamId id not found");
 
+
+  const cashKey = `projects-by-team:${teamId}`
+  const cashValue = `${page}-${limit}-${sortBy}-${sortType}-${search}`
+
+  const cachedData = await redis.hGetAll(`${cashKey}${cashValue}`)
+
+  if(cachedData.data) {
+    return res.status(200).json(new apiResponse(JSON.parse(cachedData.data), 'Success'))
+  }
+
   const teamService = new TeamService();
   const team = await teamService.findATeamById(teamId);
   if (!team) throw new ApiErrorHandler(404, "team not found !!!");
@@ -30,7 +41,12 @@ export const allProjectsByTeamController = asyncHandler(async (req, res) => {
     sortBy,
     sortType,
     ...(search !== undefined ? { search } : {}),
-    teamId: team.id
+    teamId: team.id,
+  });
+
+  // cache in redis
+  await redis.hSet(`${cashKey}${cashValue}`, {
+    data: JSON.stringify(projectList),
   });
 
   res.status(200).json(new apiResponse(projectList, "Success"));

@@ -14,12 +14,15 @@ teamRouter.post(
   authVerify,
   createTeamController,
 );
+
 teamRouter.patch(
   "/update-team/:teamId",
   authVerify,
   UpdateTeamController,
 );
+
 teamRouter.get("/get-a-team/:teamId", authVerify, FindATeamController);
+
 teamRouter.delete(
   "/delete-a-team/:teamId",
   authVerify,

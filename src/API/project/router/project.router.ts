@@ -15,11 +15,7 @@ projectRouter.get(
   authVerify,
   allProjectsByTeamController,
 );
-projectRouter.get(
-  "/all-projects",
-  authVerify,
-  allProjectsController,
-);
+projectRouter.get("/all-projects", authVerify, allProjectsController);
 projectRouter.post(
   "/add-new-project",
   authVerify,
@@ -30,17 +26,17 @@ projectRouter.patch(
   "/update-a-project/:projectId",
   authVerify,
   RestrictTo("PROJECT_MANAGER", "ADMIN", "EMPLOYEE"),
-  UpdateProjectController
+  UpdateProjectController,
 );
 projectRouter.get(
   "/find-a-project/:projectId",
   authVerify,
-  FindAProjectController
+  FindAProjectController,
 );
 projectRouter.delete(
   "/find-a-project/:projectId",
   authVerify,
-  DeleteAProjectController
+  DeleteAProjectController,
 );
 
 export { projectRouter };

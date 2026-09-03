@@ -1,3 +1,4 @@
+import redis from "../../../config/redis.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
@@ -45,6 +46,9 @@ export const UpdateProjectController = asyncHandler(async (req, res) => {
   const id = project?.id as string
   const update = await projectService.UpdateProject({ id, updatedData })
 
+  // clear cash
+  await redis.del(`all-projects:`)
+  await redis.del(`projects-by-team:${teamId}`)
 
   res.status(200).json(new apiResponse(update, 'Success'))
 
