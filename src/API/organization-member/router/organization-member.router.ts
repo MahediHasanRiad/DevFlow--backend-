@@ -5,5 +5,6 @@ import { addNewMembersController } from "../controller/add-new-member.controller
 const organizationMemberRouter = Router()
 
 organizationMemberRouter.post('/add-new-member', authVerify, addNewMembersController)
+organizationMemberRouter.post('/:memberId', authVerify, )
 
 export {organizationMemberRouter}

@@ -12,6 +12,8 @@ async function generateToken(id: string): Promise<TokenResponse> {
     try {
       
         const user = await prisma.user.findUnique({ where: { id: id } });
+        const organizationMember = await prisma.organizationMember.findUnique({ where: { userId: id } });
+
         if (!user) throw createError(404, "User not found for token generation !!!");
     
         // generate access token
@@ -19,7 +21,8 @@ async function generateToken(id: string): Promise<TokenResponse> {
           {
             id: user.id,
             name: user.name,
-            role: user.role,
+            orgId: organizationMember?.organizationId,
+            orgRole: organizationMember?.role
           },
           process.env.ACCESS_TOKEN_SECRET_KEY as string,
           { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_DATE as any },

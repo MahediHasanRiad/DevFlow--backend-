@@ -15,7 +15,6 @@ import { OTPrateLimit, passwordRateLimit } from "../../../middleware/rate-limit.
 import { upload } from "../../../middleware/multer.middleware.js";
 
 
-
 const authRouter = Router()
 
 authRouter.post('/register', upload.single('avatar'), registerController)
