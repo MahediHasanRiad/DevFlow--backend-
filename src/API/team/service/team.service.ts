@@ -22,6 +22,7 @@ export class TeamService {
     name,
     description,
     createdById,
+    organizationId
   }: CreateTeamInput): Promise<TeamType> {
     try {
       const response = await prisma.team.create({
@@ -29,6 +30,7 @@ export class TeamService {
           name,
           description,
           createdById,
+          organizationId
         },
       });
 

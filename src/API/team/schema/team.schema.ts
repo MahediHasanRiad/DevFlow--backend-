@@ -31,6 +31,7 @@ export const CreateTeamInputSchema = z.object({
     .optional()
     .nullable(),
   createdById: z.string(),
+  organizationId: z.string(),
 });
 
 export type CreateTeamInput = z.infer<typeof CreateTeamInputSchema>;

@@ -54,6 +54,33 @@ export class OrganizationMemberService {
     }
   }
 
+  async findOrganizationMemberByUserId({userId, organizationId}: {userId: string, organizationId: string}) {
+    try {
+      const organizationMember = await prisma.organizationMember.findFirst({
+        where: {
+          userId: userId,
+          organizationId: organizationId,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              avatar: true,
+              contact: true,
+            },
+          },
+        },
+      });
+      return organizationMember;
+    } catch (error: any) {
+      throw new ApiErrorHandler(
+        error.statusCode || 500,
+        error.message || "Internal Server Error",
+      );
+    }
+  }
+
   async updateOrganizationMember({
     id,
     role,

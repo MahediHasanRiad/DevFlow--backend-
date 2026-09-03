@@ -19,7 +19,7 @@ export const registerController = asyncHandler(async (req, res) => {
 
   // input validation
   const inputValidation = RegisterInputSchema.parse(data);
-  const { organizationId, name, email, role, password, designation } = inputValidation;
+  const { name, email, password } = inputValidation;
 
   // check email exist or not
   const authService = new AuthService();
@@ -46,9 +46,7 @@ export const registerController = asyncHandler(async (req, res) => {
   await userService.createUser({
     name,
     email,
-    role: role ?? "EMPLOYEE",
     password: hashPass,
-    designation: designation ?? "",
     avatar: avatarURL ?? null,
   })
 

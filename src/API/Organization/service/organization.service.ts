@@ -103,4 +103,13 @@ export class OrganizationService {
       throw new ApiErrorHandler(500, "Error finding organization");
     }
   }
+
+  async checkOrgAdmin(userId:string){
+    try {
+      const response = await prisma.organization.findFirst({where: {userId}})
+      return response
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Error updating organization");
+    }
+  }
 }

@@ -1,21 +1,30 @@
 import { Router } from "express";
 import { authVerify } from "../../../middleware/auth.middleware.js";
-import { RestrictTo } from "../../../shared/restricet-to.js";
 import { createTeamController } from "../controller/create-team.controller.js";
 import { UpdateTeamController } from "../controller/update-team.controller.js";
 import { FindATeamController } from "../controller/find-a-team.controller.js";
 import { DeleteATeamController } from "../controller/delete-a-team.controller.js";
 import { TeamListController } from "../controller/team-lists.controller.js";
 
-const teamRouter = Router()
+const teamRouter = Router();
 
+teamRouter.get("/team-lists", authVerify, TeamListController);
+teamRouter.post(
+  "/add-new-team",
+  authVerify,
+  createTeamController,
+);
+teamRouter.patch(
+  "/update-team/:teamId",
+  authVerify,
+  UpdateTeamController,
+);
+teamRouter.patch("/update-team/:teamId", authVerify, UpdateTeamController);
+teamRouter.get("/get-a-team/:teamId", authVerify, FindATeamController);
+teamRouter.delete(
+  "/delete-a-team/:teamId",
+  authVerify,
+  DeleteATeamController,
+);
 
-teamRouter.get('/team-lists', authVerify, TeamListController)
-teamRouter.post('/add-new-team', authVerify, RestrictTo('PROJECT_MANAGER'), createTeamController)
-teamRouter.patch('/update-team/:teamId', authVerify, RestrictTo('PROJECT_MANAGER'), UpdateTeamController )
-teamRouter.patch('/update-team/:teamId', authVerify, UpdateTeamController )
-teamRouter.get('/get-a-team/:teamId', authVerify, FindATeamController)
-teamRouter.delete('/delete-a-team/:teamId', authVerify, RestrictTo('PROJECT_MANAGER'), DeleteATeamController)
-
-
-export {teamRouter}
+export { teamRouter };

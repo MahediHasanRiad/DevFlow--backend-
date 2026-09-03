@@ -10,9 +10,7 @@ import type { QueryType } from "../../types/types.js";
 interface CreateUserPropType {
   name: string;
   email: string;
-  role: UserRoleType;
   password: string;
-  designation: DesignationType;
   avatar?: string;
 }
 
@@ -51,9 +49,7 @@ export class UserService {
   async createUser({
     name,
     email,
-    role,
     password,
-    designation,
     avatar,
   }: CreateUserPropType): Promise<RegisterUser> {
     try {
@@ -61,9 +57,7 @@ export class UserService {
         data: {
           name,
           email,
-          role: role ?? "EMPLOYEE",
           password: password,
-          designation,
           avatar,
         },
       });
