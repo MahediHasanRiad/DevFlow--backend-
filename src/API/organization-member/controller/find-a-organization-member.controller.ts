@@ -1,24 +1,18 @@
+import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
+import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
+import { OrganizationMemberService } from "../service/organization-member.service.js";
 
 export const FindAOrganizationMemberController = asyncHandler(async (req, res)=>{
 
-    // const memberId = req.params.memberId
-    // const organizationId = req.user?.orgId
+    const memberId = req.params.memberId as string
+    const organizationMemberService = new OrganizationMemberService()
 
+    const findOrganizationMember = await organizationMemberService.findOrganizationMemberById(memberId)
 
-    // if(!organizationId){
-    //     throw new Error('Organization not found')
-    // }
-    // if(organizationRole !== 'ADMIN' || organizationRole !== 'PROJECT_MANAGER'){
-    //     throw new Error('You are not authorized to perform this action')
-    // }
+    if(!findOrganizationMember){
+        throw new ApiErrorHandler(404, "Organization member not found")
+    }
 
-    // const organizationMember = await 
-    // if(!organizationMember){
-    //     throw new Error('Organization member not found')
-    // }
-    // if(organizationMember.organizationId !== organizationId){
-    //     throw new Error('Organization member not found')
-    // }
-    // return res.json({})
+    return res.status(200).json(new apiResponse(findOrganizationMember, "Organization member found successfully"))
 })

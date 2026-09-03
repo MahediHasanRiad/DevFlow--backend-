@@ -1,6 +1,6 @@
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import type { CreateOrganizationMemberInput } from "../schema/organization.schema.js";
+import type { CreateOrganizationMemberInput, UpdateOrganizationMemberInput } from "../schema/organization.schema.js";
 
 export class OrganizationMemberService {
   
@@ -27,9 +27,55 @@ export class OrganizationMemberService {
         where: {
           id,
         },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              avatar: true,
+              contact: true,
+            }
+          }
+        }
       });
       return organizationMember;
     } catch (error: any) {
+      throw new ApiErrorHandler(
+        error.statusCode || 500,
+        error.message || "Internal Server Error",
+      );
+    }
+  }
+
+  async updateOrganizationMember({id, role, designation}: UpdateOrganizationMemberInput) {
+    try {
+      const organizationMember = await prisma.organizationMember.update({
+        where: {
+          id,
+        },
+        data:{
+          role: role,
+          designation: designation,
+        },
+      });
+      return organizationMember;
+    } catch (error: any) {
+      throw new ApiErrorHandler(
+        error.statusCode || 500,
+        error.message || "Internal Server Error",
+      );
+    }
+  }
+
+  async deleteOrganizationMember(id:string){
+    try{
+      await prisma.organizationMember.delete({
+        where:{
+          id,
+        }
+      })
+      return true
+    }catch(error: any){
       throw new ApiErrorHandler(
         error.statusCode || 500,
         error.message || "Internal Server Error",

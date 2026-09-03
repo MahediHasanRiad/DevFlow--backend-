@@ -132,7 +132,7 @@ model OrganizationMember {
   id String @id @default(uuid())
 
   organizationId String
-  userId         String
+  userId         String @unique
 
   role        OrganizationRole @default(EMPLOYEE)
   designation Designation?
@@ -187,7 +187,7 @@ model User {
 
   auditLogs            AuditLog[]
   organizationMembers  OrganizationMember[]
-  createdOrganizations Organization[]            @relation("CreatedOrganizations")
+  createdOrganizations Organization[]       @relation("CreatedOrganizations")
   deviceTokens         DeviceToken[]
 
   @@index([designation])

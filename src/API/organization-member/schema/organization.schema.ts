@@ -25,7 +25,7 @@ export const createOrganizationMemberSchema = z.object({
 
 // --- Update Schema ---
 export const updateOrganizationMemberSchema = z.object({
-  id: z.string().uuid("Invalid Member ID format"),
+  id: z.string().uuid("Invalid Member ID format").optional(),
   role: OrganizationRoleEnum.optional(),
   designation: DesignationEnum.optional(),
 });
