@@ -15,6 +15,7 @@ import dailyPlanRouter from "./API/daily-plan/router/daily-plan.router.js";
 import { chatRouter } from "./API/chat/router/chat.router.js";
 import { organizationRouter } from "./API/Organization/router/organization.router.js";
 import { organizationMemberRouter } from "./API/organization-member/router/organization-member.router.js";
+import { roleAndPermissionRouter } from "./API/role-and-permission/router/roleAndPermission.router.js";
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use("/daily-plan", dailyPlanRouter);
 app.use("/chat", chatRouter);
 app.use("/organization", organizationRouter);
 app.use("/organization-member", organizationMemberRouter);
+app.use("/verification", roleAndPermissionRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);

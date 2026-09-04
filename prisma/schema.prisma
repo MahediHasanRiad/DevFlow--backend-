@@ -119,8 +119,8 @@ model Organization {
   name String
   slug String? @unique
 
-  userId    String?
-  createdBy User?   @relation("CreatedOrganizations", fields: [userId], references: [id])
+  userId String?
+  user   User?   @relation("CreatedOrganizations", fields: [userId], references: [id])
 
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -129,6 +129,8 @@ model Organization {
   teams               Team[]               @relation("TeamOrganization")
   projects            Project[]            @relation("ProjectOrganization")
   deviceTokens        DeviceToken[]        @relation("DeviceTokenOrganization")
+  roles               Role[]
+  permissions         Permission[]
 }
 
 model OrganizationMember {
@@ -155,14 +157,13 @@ model OrganizationMember {
 }
 
 model User {
-  id            String      @id @default(uuid())
+  id            String  @id @default(uuid())
   name          String
-  email         String      @unique
+  email         String  @unique
   password      String
-  designation   Designation
   contact       Int?
   avatar        String?
-  emailVerified Boolean     @default(false)
+  emailVerified Boolean @default(false)
 
   refreshToken String?
 
@@ -193,15 +194,19 @@ model User {
   createdOrganizations Organization[]       @relation("CreatedOrganizations")
   deviceTokens         DeviceToken[]
 
-  @@index([designation])
+  @@index([id, email])
 }
 
 model Role {
   id   String @id @default(uuid())
   name String @unique
 
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   rolePermissions     RolePermission[]
   organizationMembers OrganizationMember[]
 }
@@ -224,6 +229,9 @@ model RolePermission {
 model Permission {
   id   String @id @default(uuid())
   name String @unique
+
+  orgId        String
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

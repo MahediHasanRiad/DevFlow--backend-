@@ -25,7 +25,7 @@ export type DesignationType = z.infer<typeof DesignationSchema>;
 
 // Create User / Registration
 export const RegisterInputSchema = z.object({
-  organizationId: z.string().min(1, "Organization is required"),
+  organizationId: z.string().min(1, "Organization is required").optional(),
   name: z
     .string()
     .trim()
@@ -33,8 +33,6 @@ export const RegisterInputSchema = z.object({
     .max(100),
   email: z.string().trim().toLowerCase().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: UserRoleSchema.optional().default("EMPLOYEE"),
-  designation: DesignationSchema,
   avatar: z.custom<Express.Multer.File>().optional().nullable(),
 });
 

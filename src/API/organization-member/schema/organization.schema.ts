@@ -19,15 +19,15 @@ export const DesignationEnum = z.enum([
 export const createOrganizationMemberSchema = z.object({
   organizationId: z.string().uuid("Invalid Organization ID format"),
   userId: z.string().uuid("Invalid User ID format"),
-  role: OrganizationRoleEnum.default("EMPLOYEE"),
-  designation: DesignationEnum.optional(),
+  roleId: z.string().optional(),
+  designation: z.string().optional(),
 });
 
 // --- Update Schema ---
 export const updateOrganizationMemberSchema = z.object({
   id: z.string().uuid("Invalid Member ID format").optional(),
-  role: OrganizationRoleEnum.optional(),
-  designation: DesignationEnum.optional(),
+  roleId: z.string().optional(),
+  designation: z.string().optional(),
 });
 
 // TypeScript type inference (optional, for controller/service typing)

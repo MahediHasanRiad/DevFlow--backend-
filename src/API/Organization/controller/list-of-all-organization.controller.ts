@@ -42,7 +42,7 @@ export const getAllOrganizationsController = asyncHandler(async (req, res) => {
       sortBy,
       sortType,
       search,
-    });
+    }); 
 
     // set in redis
     await redis.hSet(
@@ -50,6 +50,7 @@ export const getAllOrganizationsController = asyncHandler(async (req, res) => {
       `${page}:${limit}:${sortBy}:${sortType}:${search}`,
       JSON.stringify(response),
     );
+    await redis.expire(`all:organizations`, 300)
 
     return res
       .status(200)

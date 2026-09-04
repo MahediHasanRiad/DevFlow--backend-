@@ -4,7 +4,6 @@ import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { AuthService } from "../service/register.service.js";
 import { UserService } from "../../user/service/user.service.js";
 
 
@@ -37,8 +36,6 @@ export const VerifyOTPController = asyncHandler(async(req, res) => {
       {
         id: updatedUser.id,
         name: updatedUser.name,
-        role: updatedUser.role,
-        designation: updatedUser.designation
       },
       process.env.ACCESS_TOKEN_SECRET_KEY || "",
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_DATE || "7d" } as any,

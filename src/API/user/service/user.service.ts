@@ -2,8 +2,6 @@ import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import type {
   CreateUserInput,
-  DesignationType,
-  UserRoleType,
 } from "../../auth/validation/register-input.validation.js";
 import type { QueryType } from "../../types/types.js";
 
@@ -82,8 +80,6 @@ export class UserService {
           email: true,
           contact: true,
           avatar: true,
-          role: true,
-          designation: true,
         },
       });
       return response;
@@ -138,8 +134,6 @@ export class UserService {
               name: true,
               email: true,
               avatar: true,
-              role: true,
-              designation: true,
             },
           },
         },
@@ -171,4 +165,5 @@ export class UserService {
       throw error;
     }
   }
+  
 }

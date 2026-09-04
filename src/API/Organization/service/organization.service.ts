@@ -85,22 +85,34 @@ export class OrganizationService {
     search = "",
   }: QueryType) {
     try {
-      const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit; 
       const organizations = await prisma.organization.findMany({
-        skip,
-        take: limit,
-        orderBy: {
-          [sortType]: sortBy,
-        },
-        where: {
-          name: {
-            contains: search,
+      where: search.trim()
+        ? {
+            name: {
+              contains: search.trim(),
+              mode: "insensitive",
+            },
+          }
+        : {},
+      include: {
+        user: {
+          select: {
+            name: true,
+            avatar: true,
           },
         },
-      });
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        [sortType]: sortBy,
+      },
+    });
       return organizations;
     } catch (error) {
-      throw new ApiErrorHandler(500, "Error finding organization");
+  console.error("DEBUG - Full Organization Error:", error); 
+   new ApiErrorHandler(500, "Error finding organization");
     }
   }
 

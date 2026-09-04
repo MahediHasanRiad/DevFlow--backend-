@@ -8,7 +8,7 @@ import { OrganizationMemberService } from "../service/organization-member.servic
 export const addNewMembersController = asyncHandler(async (req, res) => {
 
   const { organizationId, userId, role, designation } =
-    createOrganizationMemberSchema.parse(req.body);
+  createOrganizationMemberSchema.parse(req.body);
 
   const organizationMemberService = new OrganizationMemberService();
   const organizationService = new OrganizationService();

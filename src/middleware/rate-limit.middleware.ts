@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 // 1. OTP Verification Rate Limit (3 attempts per 5 minutes)
 export const OTPrateLimit = rateLimit({
   windowMs: 5 * 60 * 1000,
-  limit: 3,
+  limit: 10,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   ipv6Subnet: 56,

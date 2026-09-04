@@ -42,8 +42,6 @@ export const updateUserSchema = z.object({
       z.string(),
     ])
     .optional(),
-  role: UserRoleSchema.optional().default("EMPLOYEE"),
-  designation: DesignationSchema.optional(),
 });
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

@@ -14,15 +14,13 @@ export class OrganizationMemberService {
   async addNewMember({
     organizationId,
     userId,
-    role,
-    designation,
+    roleId,
   }: CreateOrganizationMemberInput) {
     const organizationMember = await prisma.organizationMember.create({
       data: {
         organizationId,
         userId,
-        role,
-        designation: designation ?? undefined,
+        roleId
       },
     });
     return organizationMember;
@@ -83,8 +81,7 @@ export class OrganizationMemberService {
 
   async updateOrganizationMember({
     id,
-    role,
-    designation,
+    roleId
   }: UpdateOrganizationMemberInput) {
     try {
       const organizationMember = await prisma.organizationMember.update({
@@ -92,8 +89,7 @@ export class OrganizationMemberService {
           id,
         },
         data: {
-          role: role,
-          designation: designation,
+          roleId: roleId,
         },
       });
       return organizationMember;
