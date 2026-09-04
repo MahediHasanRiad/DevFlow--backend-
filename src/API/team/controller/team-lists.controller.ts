@@ -58,6 +58,7 @@ export const TeamListController = asyncHandler(async (req, res) => {
     sortBy,
     sortType,
     ...(search !== undefined ? { search } : {}),
+    organizationId: checkOrganizationExist.id
   });
 
   // set in redis

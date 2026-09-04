@@ -17,6 +17,10 @@ interface UpdateTeamProp {
   };
 }
 
+interface AllTeamListsProp extends QueryType{
+  organizationId: string;
+}
+
 export class TeamService {
   async addNewTeam({
     name,
@@ -95,10 +99,12 @@ export class TeamService {
     sortBy,
     sortType,
     search,
-  }: QueryType): Promise<TeamType[]> {
+    organizationId
+  }: AllTeamListsProp): Promise<TeamType[]> {
     try {
       const teamsList = await prisma.team.findMany({
         where: {
+          organizationId,
           name: {
             contains: search,
             mode: "insensitive",
@@ -106,6 +112,9 @@ export class TeamService {
         },
       });
       const teamMembers = await prisma.teamMember.findMany({
+        where: {teamId: {
+          in: teamsList.map((t:TeamType) => t.id),
+        }},
         include: {
           user: {
             select: {

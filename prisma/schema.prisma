@@ -135,9 +135,9 @@ model OrganizationMember {
   id String @id @default(uuid())
 
   organizationId String
-  userId         String 
+  userId         String
 
-  role        OrganizationRole @default(EMPLOYEE)
+  roleId      String
   designation Designation?
 
   createdAt DateTime @default(now())
@@ -145,11 +145,12 @@ model OrganizationMember {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
+  role         Role         @relation(fields: [roleId], references: [id])
 
   @@unique([organizationId, userId])
   @@index([organizationId])
   @@index([userId])
-  @@index([role])
+  @@index([roleId])
   @@index([designation])
 }
 
@@ -193,6 +194,43 @@ model User {
   deviceTokens         DeviceToken[]
 
   @@index([designation])
+}
+
+model Role {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  rolePermissions     RolePermission[]
+  organizationMembers OrganizationMember[]
+}
+
+model RolePermission {
+  id String @id @default(uuid())
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleId, permissionId])
+}
+
+model Permission {
+  id   String @id @default(uuid())
+  name String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+
+  @@index([name])
 }
 
 model Team {

@@ -9,24 +9,12 @@ import { TeamListController } from "../controller/team-lists.controller.js";
 const teamRouter = Router();
 
 teamRouter.get("/team-lists/:orgId", authVerify, TeamListController);
-teamRouter.post(
-  "/add-new-team",
-  authVerify,
-  createTeamController,
-);
+teamRouter.post("/add-new-team", authVerify, createTeamController);
 
-teamRouter.patch(
-  "/update-team/:teamId",
-  authVerify,
-  UpdateTeamController,
-);
+teamRouter.patch("/update-team/:teamId", authVerify, UpdateTeamController);
 
 teamRouter.get("/get-a-team/:teamId", authVerify, FindATeamController);
 
-teamRouter.delete(
-  "/delete-a-team/:teamId",
-  authVerify,
-  DeleteATeamController,
-);
+teamRouter.delete("/delete-a-team/:teamId", authVerify, DeleteATeamController);
 
 export { teamRouter };
