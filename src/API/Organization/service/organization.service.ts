@@ -37,6 +37,29 @@ export class OrganizationService {
     }
   }
 
+  async findOrganizationByUserId(userId: string) {
+    try {
+      const response = await prisma.organization.findFirst({
+        where: {
+          userId,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              contact: true,
+              avatar: true,
+            },
+          },
+        },
+      });
+      return response;
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Error finding organization");
+    }
+  }
+
   async deleteOrganizationById(id: string) {
     try {
       const response = await prisma.organization.delete({

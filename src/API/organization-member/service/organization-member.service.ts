@@ -52,6 +52,26 @@ export class OrganizationMemberService {
     }
   }
 
+  async findUserRoleInOrganization({userId, orgId}: {userId: string, orgId: string}) {
+    try {
+      const organizationMember = await prisma.organizationMember.findFirst({
+        where: {
+          userId: userId,
+          organizationId: orgId,
+        },
+        select: {
+          roleId: true,
+        },
+      });
+      return organizationMember;
+    } catch (error: any) {
+      throw new ApiErrorHandler(
+        error.statusCode || 500,
+        error.message || "Internal Server Error",
+      );
+    }
+  }
+
   async findOrganizationMemberByUserId({userId, organizationId}: {userId: string, organizationId: string}) {
     try {
       const organizationMember = await prisma.organizationMember.findFirst({
