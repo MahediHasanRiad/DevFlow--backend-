@@ -11,6 +11,7 @@ export class RoleService {
             return response;
         } catch (error:any) {
             console.log(error)
+            throw new ApiErrorHandler(500, error.message || error);
         }
     }
 
@@ -22,6 +23,7 @@ export class RoleService {
             return response;
         } catch (error:any) {
             console.log(error)
+            throw new ApiErrorHandler(500, error.message || error);
         }
     }
 
@@ -38,7 +40,31 @@ export class RoleService {
 
         } catch (error:any) {
             console.log(error)
-            
+            throw new ApiErrorHandler(500, error.message || error);
+        }
+    }
+
+    async getAllRoleByOrgId(orgId: string){
+        try {
+            const response = await prisma.role.findMany({
+                where: { orgId },
+            });
+            return response;
+        } catch (error:any) {
+            console.log(error)
+            throw new ApiErrorHandler(500, error.message || error);
+        }
+    }
+
+    async deleteRole(roleId: string){
+        try {
+            const response = await prisma.role.delete({
+                where: { id: roleId },
+            });
+            return response;
+        } catch (error:any) {
+            console.log(error)
+            throw new ApiErrorHandler(500, error.message || error);
         }
     }
 
