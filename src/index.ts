@@ -16,6 +16,7 @@ import { chatRouter } from "./API/chat/router/chat.router.js";
 import { organizationRouter } from "./API/Organization/router/organization.router.js";
 import { organizationMemberRouter } from "./API/organization-member/router/organization-member.router.js";
 import { roleAndPermissionRouter } from "./API/role-and-permission/router/roleAndPermission.router.js";
+import { roleBasePermissionRouter } from "./API/role-base-permission/router/role-base-permission.router.js";
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use("/chat", chatRouter);
 app.use("/organization", organizationRouter);
 app.use("/organization-member", organizationMemberRouter);
 app.use("/verification", roleAndPermissionRouter);
+app.use("/role-base-permission", roleBasePermissionRouter);
 
 // Global Error Handler
 app.use(globalErrorHandler);
