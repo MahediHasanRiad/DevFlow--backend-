@@ -8,7 +8,7 @@ export class PermissionService {
         try {
             const permission = await prisma.permission.create({
                 data: {
-                    name,
+                    name:name.toUpperCase(),
                     orgId
                 }
             })
@@ -94,6 +94,32 @@ export class PermissionService {
             return permission
         } catch (error:any) {
             console.error("Error Creating Multiple Permissions : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
+
+    async getPermissionsByRoleId(roleId:string){
+        try {
+            const permission = await prisma.rolePermission.findMany({
+                where: {
+                    roleId: roleId
+                },
+                include: {
+                    permission:{
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
+            })
+
+            const setPermission = permission.map((item:any) => item.permission.name)
+
+            return {permission: setPermission} 
+    
+        } catch (error:any) {
+            console.error("Error Listing Permission : ", error)
             throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
         }
     }

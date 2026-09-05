@@ -6,7 +6,7 @@ interface PermissionContext {
 	permissions: string[];
 }
 
-export class PermissionManager {
+export class PermissionManager2 {
 	private readonly cachedRoleHierarchy: Map<string, Set<string>> = new Map();
 	private readonly cachedRolePermissions: Map<string, Set<string>> = new Map();
 

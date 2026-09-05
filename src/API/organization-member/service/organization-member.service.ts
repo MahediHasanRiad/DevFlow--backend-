@@ -164,12 +164,11 @@ export class OrganizationMemberService {
               name: true,
               email: true,
               avatar: true,
-              contact: true,
             },
           },
         },
       });
-
+console.log('organizationMembers', organizationMembers)
       const total = await prisma.organizationMember.count({
         where: { organizationId: org_Id },
       });

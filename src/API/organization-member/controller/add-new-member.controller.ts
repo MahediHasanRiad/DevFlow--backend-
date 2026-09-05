@@ -1,3 +1,4 @@
+import redis from "../../../config/redis.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
@@ -7,7 +8,7 @@ import { OrganizationMemberService } from "../service/organization-member.servic
 
 export const addNewMembersController = asyncHandler(async (req, res) => {
 
-  const { organizationId, userId, role, designation } =
+  const { organizationId, userId, roleId } =
   createOrganizationMemberSchema.parse(req.body);
 
   const organizationMemberService = new OrganizationMemberService();
@@ -45,8 +46,7 @@ export const addNewMembersController = asyncHandler(async (req, res) => {
     const addNewMember = await organizationMemberService.addNewMember({
       organizationId,
       userId,
-      role,
-      designation,
+      roleId,
     });
 
     return res
@@ -56,16 +56,21 @@ export const addNewMembersController = asyncHandler(async (req, res) => {
 
   // create
   if (!checkRoleInOrg) {
-    const checkOrgAdmin = await organizationService.checkOrgAdmin(user_Id);
+    const checkOrgAdmin = await organizationService.checkOrgAdmin(organizationId, user_Id);
     if (!checkOrgAdmin)
       throw new ApiErrorHandler(403, "You are not allowed to add a new member  !!!");
 
     const addNewMember = await organizationMemberService.addNewMember({
       organizationId,
       userId,
-      role,
-      designation,
+      roleId,
     });
+
+
+    // clear cache
+    await redis.del(`organization-member:${organizationId}:*`);
+
+
     res
       .status(201)
       .json(new apiResponse(addNewMember, "successfully create a new Team"));

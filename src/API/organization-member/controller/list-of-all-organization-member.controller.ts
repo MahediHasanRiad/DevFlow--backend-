@@ -29,8 +29,8 @@ export const getListOfAllMemberController = asyncHandler(async (req, res) => {
     throw new ApiErrorHandler(404, "Organization not found !");
 
   // get from cash
-  const cacheKey = `organization-member:`;
-  const cacheField = `${orgId}:page:${page}:limit:${limit}:sortBy:${sortBy}:sortType:${sortType}:search:${search}`;
+  const cacheKey = `organization-member:${orgId}`;
+  const cacheField = `${page}:${limit}:sortBy:${sortBy}:sortType:${sortType}:search:${search}`;
   const cacheMember = await redis.hGet(cacheKey, cacheField);
 
   if (cacheMember) {
@@ -51,7 +51,7 @@ export const getListOfAllMemberController = asyncHandler(async (req, res) => {
 
     // set in redis
     await redis.hSet(cacheKey, cacheField, JSON.stringify(list));
-    await redis.expire(cacheKey, 60 * 60 * 24);
+    await redis.expire(cacheKey, 300);
 
     return res
       .status(200)
