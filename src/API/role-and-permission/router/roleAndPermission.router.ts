@@ -8,6 +8,8 @@ import { createPermissionController } from "../controller/create-permission.cont
 import { findPermissionByIdController } from "../controller/find-a-permission.controller.js";
 import { getAllPermissionByOrgIdController } from "../controller/list-of-all-permission-by-org.controller.js";
 import { deletePermissionController } from "../controller/delete-permission.controller.js";
+import { createMultipleRolesController } from "../controller/create-mulple-role.controller.js";
+import { createMultiplePermissionsController } from "../controller/create-multiple-permission.controller.js";
 
 
 const roleAndPermissionRouter = Router()
@@ -17,13 +19,14 @@ roleAndPermissionRouter.post('/create-a-role', authVerify, createRoleController)
 roleAndPermissionRouter.get('/find-a-role/:roleId', authVerify, FindARoleByIdController)
 roleAndPermissionRouter.get('/find-all-role-by-org/:orgId', authVerify, getAllRoleByOrgIdController)
 roleAndPermissionRouter.delete('/delete-a-role/:roleId', authVerify, deleteRoleController)
+roleAndPermissionRouter.post('/create-multiple-roles', authVerify, createMultipleRolesController)
 
 // permissions
 roleAndPermissionRouter.post('/create-a-permission', authVerify, createPermissionController)
 roleAndPermissionRouter.get('/find-a-permission/:permissionId', authVerify, findPermissionByIdController)
 roleAndPermissionRouter.get('/find-all-permission-by-org/:orgId', authVerify, getAllPermissionByOrgIdController)
 roleAndPermissionRouter.delete('/delete-a-permission/:permissionId', authVerify, deletePermissionController)
-
+roleAndPermissionRouter.post('/create-multiple-permissions', authVerify, createMultiplePermissionsController)
 
 
 

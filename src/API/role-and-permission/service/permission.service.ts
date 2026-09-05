@@ -80,5 +80,22 @@ export class PermissionService {
             throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
         }
     }
+
+    async createMultiplePermissions(orgId:string, permissions:string[]){
+        try {
+            const permission = await prisma.permission.createMany({
+                data: permissions.map(permission => ({
+                    name: permission.trim().toUpperCase(),
+                    orgId: orgId
+                })),
+                skipDuplicates: true 
+            })
+    
+            return permission
+        } catch (error:any) {
+            console.error("Error Creating Multiple Permissions : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
     
 }

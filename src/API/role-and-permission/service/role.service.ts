@@ -15,10 +15,15 @@ export class RoleService {
         }
     }
 
-    async findRoleByName(name: string){
+    async findRoleByName(orgId: string, name: string){
         try {
             const response = await prisma.role.findFirst({
-                where: { name },
+                where: { 
+                    AND: [
+                        { orgId },
+                        { name: name.toUpperCase() },
+                    ],
+                },
             });
             return response;
         } catch (error:any) {
@@ -31,12 +36,30 @@ export class RoleService {
         try {
             const createRole = await prisma.role.create({
                 data: {
-                    name,
+                    name: name.toUpperCase(),
                     orgId,
                 },
             });
 
             return createRole;
+
+        } catch (error:any) {
+            console.log(error)
+            throw new ApiErrorHandler(500, error.message || error);
+        }
+    }
+
+    async createMultipleRoles(orgId: string, roles: string[]){
+        try {
+            const createMultipleRoles = await prisma.role.createMany({
+                data: roles.map(role => ({
+                    name: role.trim().toUpperCase(),
+                    orgId,
+                })),
+                skipDuplicates: true    
+            });
+
+            return createMultipleRoles;
 
         } catch (error:any) {
             console.log(error)
