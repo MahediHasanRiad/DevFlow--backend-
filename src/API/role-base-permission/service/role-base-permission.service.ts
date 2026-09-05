@@ -118,13 +118,18 @@ export class RoleBasePermissionService {
             const roleListWithPermission = await Promise.all(roleList.map(async(role:RoleType) => {
                 const permissions = await this.getPermissionsByRole(role.id)
 
+                const permissionNames: string[] = []
+                permissions.forEach(async(permission:any) => {
+                    permissionNames.push(permission.permission.name)
+                })
+  
                 if(permissions.length === 0){
                     await this.createRoleBasePermission(role.id, [])
                 }
 
                 return {
                     role: role,
-                    permissions: permissions
+                    permissions: permissionNames
                 }
             }))
 

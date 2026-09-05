@@ -12,15 +12,15 @@ export const createRoleController = asyncHandler(async (req, res) => {
   const roleService = new RoleService();
   const organizationService = new OrganizationService();
 
-
-  const findRole = await roleService.findRoleByName(req.body.name);
-  if (findRole) throw new ApiErrorHandler(400, "Role Already Exist !!");
-
-  // verification
+  
   const organization = await organizationService.findOrganizationByUserId(userId);
   if (!organization)
     throw new ApiErrorHandler(404, "Organization Not Found !!");
 
+  const findRole = await roleService.findRoleByName(organization.id, req.body.name);
+  if (findRole) throw new ApiErrorHandler(400, "Role Already Exist !!");
+ 
+  // verification
   const adminCheck = await organizationService.checkOrgAdmin(organization.id, userId)
   if(!adminCheck){
     throw new ApiErrorHandler(403, "Only Admin Can Create Role !!");

@@ -31,10 +31,10 @@ export const createRoleBasePermissionController = asyncHandler(async (req, res) 
     }
 
     // verify permission id
-    for (const permissionId of permissionIds) {
+    permissionIds.forEach(async (permissionId) => {
         const permission = await permissionService.findPermissionById(permissionId)
         if (!permission) throw new ApiErrorHandler(404, `Permission with ID ${permissionId} not found !!`)
-    }
+    })
 
     // check already assigned permission
     for (const permissionId of permissionIds) {
