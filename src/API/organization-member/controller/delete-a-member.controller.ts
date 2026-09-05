@@ -1,3 +1,4 @@
+import { PermissionManager } from "../../../pm/permission-manager.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
 import { OrganizationMemberService } from "../service/organization-member.service.js";
@@ -10,7 +11,9 @@ export const deleteOrganizationMemberController = asyncHandler(
     const organizationMemberService = new OrganizationMemberService();
 
     // verification
-    if (req.user?.orgRole !== "ADMIN" && req.user?.orgRole !== "PROJECT_MANAGER") {
+    const permissionManager = new PermissionManager(req?.user?.orgRole as string)
+    if (!permissionManager.hasPermission("org-member:delete")) {
+
       throw new ApiErrorHandler(
         403,
         "you are not authorized to perform this action",

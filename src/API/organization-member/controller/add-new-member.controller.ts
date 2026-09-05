@@ -1,4 +1,5 @@
 import redis from "../../../config/redis.js";
+import { PermissionManager } from "../../../pm/permission-manager.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
@@ -9,7 +10,7 @@ import { OrganizationMemberService } from "../service/organization-member.servic
 export const addNewMembersController = asyncHandler(async (req, res) => {
 
   const { organizationId, userId, roleId } =
-  createOrganizationMemberSchema.parse(req.body);
+    createOrganizationMemberSchema.parse(req.body);
 
   const organizationMemberService = new OrganizationMemberService();
   const organizationService = new OrganizationService();
@@ -20,59 +21,42 @@ export const addNewMembersController = asyncHandler(async (req, res) => {
     throw new ApiErrorHandler(401, "Unauthorized");
   }
 
+  // verification by permission
+  const myRole = req.user?.orgRole as string;
+  const permissionManager = new PermissionManager(myRole)
+
+  if (!permissionManager.hasPermission("org-member:add")) {
+    throw new ApiErrorHandler(403, "You are not allowed to add a new member !!");
+  }
+
   const findOrganization =
     await organizationService.findOrganizationById(organizationId);
   if (!findOrganization)
     throw new ApiErrorHandler(404, "Organization not found");
 
-  const checkRoleInOrg =
+  const checkExistUser =
     await organizationMemberService.findOrganizationMemberByUserId({
-      userId: user_Id,
+      userId: userId,
       organizationId,
     });
 
-  if (checkRoleInOrg) {
-    if (checkRoleInOrg?.organizationId !== organizationId) {
-      throw new ApiErrorHandler(403, "User not found in this organization");
-    }
-
-    if (
-      checkRoleInOrg?.role !== "ADMIN" ||
-      checkRoleInOrg?.role !== "PROJECT_MANAGER"
-    ) {
-      throw new ApiErrorHandler(403, "You are not allowed to add a new member !!");
-    }
-
-    const addNewMember = await organizationMemberService.addNewMember({
-      organizationId,
-      userId,
-      roleId,
-    });
-
-    return res
-      .status(201)
-      .json(new apiResponse(addNewMember, "Successfully Created !!!"));
-  }
-
-  // create
-  if (!checkRoleInOrg) {
-    const checkOrgAdmin = await organizationService.checkOrgAdmin(organizationId, user_Id);
-    if (!checkOrgAdmin)
-      throw new ApiErrorHandler(403, "You are not allowed to add a new member  !!!");
-
-    const addNewMember = await organizationMemberService.addNewMember({
-      organizationId,
-      userId,
-      roleId,
-    });
+  if (checkExistUser) throw new ApiErrorHandler(400, "User already exists in this organization");
 
 
-    // clear cache
-    await redis.del(`organization-member:${organizationId}:*`);
+  // create new member in organization
+  const addNewMember = await organizationMemberService.addNewMember({
+    organizationId,
+    userId: userId,
+    roleId,
+  });
 
 
-    res
-      .status(201)
-      .json(new apiResponse(addNewMember, "successfully create a new Team"));
-  }
+  // clear cache
+  const cacheKey = `organization-member:${organizationId}:*`;
+  await redis.del(cacheKey);
+
+
+  res
+    .status(201)
+    .json(new apiResponse(addNewMember, "successfully create a new Team"));
 });

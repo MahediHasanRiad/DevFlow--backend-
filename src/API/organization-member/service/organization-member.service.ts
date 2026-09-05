@@ -16,6 +16,7 @@ export class OrganizationMemberService {
     userId,
     roleId,
   }: CreateOrganizationMemberInput) {
+
     const organizationMember = await prisma.organizationMember.create({
       data: {
         organizationId,
@@ -72,7 +73,7 @@ export class OrganizationMemberService {
     }
   }
 
-  async findOrganizationMemberByUserId({userId, organizationId}: {userId: string, organizationId: string}) {
+  async findOrganizationMemberByUserId({userId, organizationId}: {userId: string, organizationId?: string}) {
     try {
       const organizationMember = await prisma.organizationMember.findFirst({
         where: {
@@ -86,6 +87,11 @@ export class OrganizationMemberService {
               email: true,
               avatar: true,
               contact: true,
+            },
+          },
+          role: { 
+            select: {
+              name: true,
             },
           },
         },
@@ -166,9 +172,14 @@ export class OrganizationMemberService {
               avatar: true,
             },
           },
+          role: { 
+            select: {
+              name: true,
+            },
+          },
         },
       });
-console.log('organizationMembers', organizationMembers)
+
       const total = await prisma.organizationMember.count({
         where: { organizationId: org_Id },
       });

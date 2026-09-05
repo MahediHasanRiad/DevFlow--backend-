@@ -6,7 +6,7 @@ declare global {
         id: string;
         email: string;
         orgId: string;
-        orgRole: "EMPLOYEE" | "PROJECT_MANAGER" | "ADMIN";
+        orgRole: string;
       };
     }
   }

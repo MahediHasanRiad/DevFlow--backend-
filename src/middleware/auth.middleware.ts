@@ -23,7 +23,8 @@ const authVerify = asyncHandler(
         token,
         process.env.ACCESS_TOKEN_SECRET_KEY as string
       ) as JwtPayload & { id?: string };
-    } catch (error: any) {
+    } 
+    catch (error: any) {
       if (error.name === "TokenExpiredError") {
         throw createError(401, "jwt expired");
       }
@@ -45,9 +46,11 @@ const authVerify = asyncHandler(
     if (!user) {
       throw createError(404, "User not found");
     }
-
+    console.log('pay', payload)
     // 4. Attach user object to request
     req.user = user;
+    req!.user!.orgId = payload.orgId as string
+    // req.user.orgRole = payload.organizationRole as string
 
     next();
   }
