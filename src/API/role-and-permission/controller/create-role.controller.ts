@@ -1,7 +1,6 @@
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
-import { OrganizationMemberService } from "../../organization-member/service/organization-member.service.js";
 import { OrganizationService } from "../../Organization/service/organization.service.js";
 import { RoleService } from "../service/role.service.js";
 
@@ -12,7 +11,7 @@ export const createRoleController = asyncHandler(async (req, res) => {
   // class instances
   const roleService = new RoleService();
   const organizationService = new OrganizationService();
-  const organizationMemberService = new OrganizationMemberService();
+
 
   const findRole = await roleService.findRoleByName(req.body.name);
   if (findRole) throw new ApiErrorHandler(400, "Role Already Exist !!");
@@ -22,8 +21,10 @@ export const createRoleController = asyncHandler(async (req, res) => {
   if (!organization)
     throw new ApiErrorHandler(404, "Organization Not Found !!");
 
-  if (organization.userId !== userId)
+  const adminCheck = await organizationService.checkOrgAdmin(organization.id, userId)
+  if(!adminCheck){
     throw new ApiErrorHandler(403, "Only Admin Can Create Role !!");
+  }
 
   // create
   const createRole = await roleService.createRole(req.body.name, organization.id);

@@ -1,0 +1,84 @@
+import { prisma } from "../../../lib/prisma.js"
+import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js"
+
+
+export class PermissionService {
+
+    async createPermission(name:string, orgId:string){
+        try {
+            const permission = await prisma.permission.create({
+                data: {
+                    name,
+                    orgId
+                }
+            })
+    
+            return permission
+        } catch (error:any) {
+            console.error("Error Creating Permission : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
+
+    async findPermissionByName(name:string, orgId:string){
+        try {
+            const permission = await prisma.permission.findFirst({
+                where: {
+                    orgId,
+                    name: name
+                }
+            })
+    
+            return permission
+        } catch (error:any) {
+            console.error("Error Finding Permission : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
+
+    async findPermissionById(permissionId:string){
+        try {
+            const permission = await prisma.permission.findUnique({
+                where: {
+                    id: permissionId
+                }
+            })
+    
+            return permission
+        } catch (error:any) {
+            console.error("Error Finding Permission : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
+
+    async deletePermission(permissionId:string){
+        try {
+            const permission = await prisma.permission.delete({
+                where: {
+                    id: permissionId
+                }
+            })
+    
+            return permission
+        } catch (error:any) {
+            console.error("Error Deleting Permission : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
+
+    async getAllPermissionByOrgId(orgId:string){
+        try {
+            const permission = await prisma.permission.findMany({
+                where: {
+                    orgId
+                }
+            })
+    
+            return permission
+        } catch (error:any) {
+            console.error("Error Listing Permission : ", error)
+            throw new ApiErrorHandler(500, error.message || "Internal Server Error !!")
+        }
+    }
+    
+}
