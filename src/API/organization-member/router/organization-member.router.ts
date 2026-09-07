@@ -6,14 +6,32 @@ import { updateMemberController } from "../controller/update-organization.contro
 import { deleteOrganizationMemberController } from "../controller/delete-a-member.controller.js";
 import { getListOfAllMemberController } from "../controller/list-of-all-organization-member.controller.js";
 
+const organizationMemberRouter = Router();
 
+organizationMemberRouter.get(
+  "/list-of-all-members/:orgId",
+  authVerify,
+  getListOfAllMemberController,
+);
+organizationMemberRouter.post(
+  "/add-new-member",
+  authVerify,
+  addNewMembersController,
+);
+organizationMemberRouter.get(
+  "/:memberId",
+  authVerify,
+  FindAOrganizationMemberController,
+);
+organizationMemberRouter.patch(
+  "/:memberId",
+  authVerify,
+  updateMemberController,
+);
+organizationMemberRouter.delete(
+  "/:memberId",
+  authVerify,
+  deleteOrganizationMemberController,
+);
 
-const organizationMemberRouter = Router()
-
-organizationMemberRouter.get('/list-of-all-members/:orgId', authVerify, getListOfAllMemberController)
-organizationMemberRouter.post('/add-new-member', authVerify, addNewMembersController)
-organizationMemberRouter.get('/:memberId', authVerify, FindAOrganizationMemberController)
-organizationMemberRouter.patch('/:memberId', authVerify, updateMemberController)
-organizationMemberRouter.delete('/:memberId', authVerify, deleteOrganizationMemberController)
-
-export {organizationMemberRouter}
+export { organizationMemberRouter };

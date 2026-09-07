@@ -50,7 +50,7 @@ const authVerify = asyncHandler(
     // 4. Attach user object to request
     req.user = user;
     req!.user!.orgId = payload.orgId as string
-    // req.user.orgRole = payload.organizationRole as string
+    req.user!.orgRole = payload.orgRole as string
 
     next();
   }

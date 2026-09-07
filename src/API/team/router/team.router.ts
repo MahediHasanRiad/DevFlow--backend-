@@ -9,6 +9,7 @@ import { TeamListController } from "../controller/team-lists.controller.js";
 const teamRouter = Router();
 
 teamRouter.get("/team-lists/:orgId", authVerify, TeamListController);
+
 teamRouter.post("/add-new-team", authVerify, createTeamController);
 
 teamRouter.patch("/update-team/:teamId", authVerify, UpdateTeamController);

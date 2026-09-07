@@ -111,9 +111,8 @@ export class PermissionService {
                             name: true
                         }
                     }
-                }
-            })
-
+                } 
+            }) 
             const setPermission = permission.map((item:any) => item.permission.name)
 
             return {permission: setPermission} 

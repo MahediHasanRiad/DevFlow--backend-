@@ -1,9 +1,21 @@
 import { Router } from "express";
 import { authVerify } from "../../../middleware/auth.middleware.js";
-import { createChatController } from "../controller/chat.controller.js";
+import {
+  addParticipantController,
+  createChatController,
+  createMessageController,
+} from "../controller/chat.controller.js";
 
+const conversationRouter = Router();
 const chatRouter = Router();
 
-chatRouter.post('/create', authVerify, createChatController)
+conversationRouter.post("/create", authVerify, createChatController);
+conversationRouter.post(
+  "/add-participant",
+  authVerify,
+  addParticipantController,
+);
 
-export {chatRouter}
+chatRouter.post("/send", authVerify, createMessageController);
+
+export { conversationRouter, chatRouter };

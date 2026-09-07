@@ -21,14 +21,14 @@ async function generateToken(id: string): Promise<TokenResponse> {
         const organizationMember = await organizationMemberService.findOrganizationMemberByUserId({userId});
 
         if (!user) throw createError(404, "User not found for token generation !!!");
-    
+
         // generate access token
         const accessToken = jwt.sign(
           {
             id: user.id,
             name: user.name,
             orgId: organizationMember?.organizationId,
-            orgRole: organizationMember?.role?.name 
+            orgRole: organizationMember?.role?.id  
           },
           process.env.ACCESS_TOKEN_SECRET_KEY as string,
           { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_DATE as any },
