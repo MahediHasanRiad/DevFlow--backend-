@@ -1,4 +1,5 @@
 import redis from "../../../config/redis.js";
+import { PermissionManager } from "../../../pm/permission-manager.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
 import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
@@ -33,10 +34,10 @@ export const createTeamController = asyncHandler(async (req, res) => {
 
   if (checkMember) {
     // verification
-    if (
-      checkMember?.role !== "ADMIN" &&
-      checkMember?.role !== "PROJECT_MANAGER"
-    ) {
+    const permissionManagerService = new PermissionManager(checkMember.roleId);
+    const hasPermission = permissionManagerService.hasPermission("TEAM:CREATE");
+
+    if (!hasPermission) {
       throw new ApiErrorHandler(403, "You are not allowed to create a team");
     }
 
@@ -51,8 +52,11 @@ export const createTeamController = asyncHandler(async (req, res) => {
       .status(201)
       .json(new apiResponse(addTeam, "successfully create a new Team"));
   } else {
-    const checkOrganization = await organizationService.checkOrgAdmin(user_Id);
-    
+    const checkOrganization = await organizationService.checkOrgAdmin(
+      organizationId,
+      user_Id,
+    );
+
     // create
     if (checkOrganization) {
       const addTeam = await teamService.addNewTeam({
@@ -63,8 +67,7 @@ export const createTeamController = asyncHandler(async (req, res) => {
       });
 
       // delete cash
-      await redis.del(`teams:${organizationId}:`)
-      
+      await redis.del(`teams:${organizationId}:`);
 
       res
         .status(201)
