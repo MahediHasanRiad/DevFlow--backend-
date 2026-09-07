@@ -17,7 +17,7 @@ import { organizationRouter } from "./API/Organization/router/organization.route
 import { organizationMemberRouter } from "./API/organization-member/router/organization-member.router.js";
 import { roleAndPermissionRouter } from "./API/role-and-permission/router/roleAndPermission.router.js";
 import { roleBasePermissionRouter } from "./API/role-base-permission/router/role-base-permission.router.js";
-import { PermissionManager } from "./pm/permission-manager.js";
+
 
 
 const app = express();

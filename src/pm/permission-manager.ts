@@ -31,7 +31,8 @@ export class PermissionManager {
             const permissionService = new PermissionService();
             const permissions = await permissionService.getPermissionsByRoleId(this.organizationRole);
             this.cachedPermissions = permissions?.permission || [];
-        } catch (error: any) {
+        } 
+        catch (error: any) {
             console.error(error);
             throw new ApiErrorHandler(error?.message || 'Failed to load permissions');
         }
