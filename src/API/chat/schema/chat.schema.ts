@@ -6,7 +6,7 @@ export const MessageTypeEnum = z.enum(["TEXT", "IMAGE", "FILE"]);
 
 // --- Base Model Schemas ---
 export const conversationSchema = z.object({
-  id: z.string().uuid("Invalid Conversation ID"),
+  id: z.string().uuid("Invalid Conversation ID").optional(),
   type: ConversationTypeEnum,
   title: z.string().trim().min(1, "Title cannot be empty").nullable().optional(),
   createdById: z.string().uuid("Invalid Creator User ID"),
@@ -33,14 +33,6 @@ export const messageSchema = z
   });
 
 
-// Payload for creating a new conversation
-export const createConversationSchema = z.object({
-  type: ConversationTypeEnum,
-  title: z.string().trim().min(1, "Title is required").optional(),
-  participantUserIds: z
-    .array(z.string().uuid("Invalid User ID"))
-    .min(1, "At least one participant is required"),
-});
 
 // Payload for adding a participant to a conversation
 export const addParticipantSchema = z.object({
@@ -63,8 +55,7 @@ export const createMessageSchema = z
 
 
 
-export type Conversation = z.infer<typeof conversationSchema>;
-export type ConversationParticipant = z.infer<typeof conversationParticipantSchema>;
-export type Message = z.infer<typeof messageSchema>;
-export type CreateConversationInput = z.infer<typeof createConversationSchema>;
-export type CreateMessageInput = z.infer<typeof createMessageSchema>;
+export type ConversationInputType = z.infer<typeof conversationSchema>;
+export type ConversationParticipantInputType = z.infer<typeof conversationParticipantSchema>;
+export type MessageInputType = z.infer<typeof messageSchema>;
+export type CreateMessageInputType = z.infer<typeof createMessageSchema>;
