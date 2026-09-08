@@ -1,201 +1,304 @@
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
+import type {
+  ConversationInputType,
+  CreateMessageInputType,
+} from "../schema/chat.schema.js";
 
-
-interface CreateChatParams extends CreateChatInput {
-  createdById: string;
-}
-
-interface AddParticipantParams extends AddParticipantInput {
-  requestedById: string;
-}
-
-interface CreateMessageParams extends CreateMessageInput {
-  senderId: string;
-}
-
-export class ChatService {
-  
-  async createConversation({ type, title, receiverId, createdById }: CreateChatParams) {
+export class ConversationService {
+  async existsConversation({
+    receiverId,
+    createdById,
+  }: {
+    receiverId: string;
+    createdById: string;
+  }) {
     try {
-      if (createdById === receiverId) {
-        throw new ApiErrorHandler(
-          400,
-          "Cannot create a conversation with yourself",
-        );
-      }
-
-      const receiver = await prisma.user.findFirst({
-        where: { id: receiverId },
-      });
-
-      if (!receiver) {
-        throw new ApiErrorHandler(404, "Receiver not found");
-      }
-
-      const existingConversation = await prisma.conversation.findFirst({
+      const conversation = await prisma.conversation.findFirst({
         where: {
-          type,
+          type: "DIRECT",
           AND: [
-            { participants: { some: { userId: createdById } } },
-            { participants: { some: { userId: receiverId } } },
             {
               participants: {
-                none: { userId: { notIn: [createdById, receiverId] } },
+                some: { userId: receiverId },
+              },
+            },
+            {
+              participants: {
+                some: { userId: createdById },
+              },
+            },
+          ],
+        },
+      });
+      return conversation;
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to check if conversation exists");
+    }
+  }
+
+  async createConversation({
+    type = "DIRECT",
+    title,
+    createdById,
+    receiverId,
+  }: ConversationInputType) {
+    try {
+      const participants = [
+        { userId: createdById },
+        ...(receiverId && receiverId !== createdById
+          ? [{ userId: receiverId }]
+          : []),
+      ];
+
+      const conversation = await prisma.conversation.create({
+        data: {
+          type,
+          title,
+          createdById,
+          participants: {
+            create: participants,
+          },
+        },
+      });
+      return conversation;
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to create conversation");
+    }
+  }
+
+  async addParticipantToConversation({
+    conversationId,
+    participantUserIds,
+  }: {
+    conversationId: string;
+    participantUserIds: string[];
+  }) {
+    try {
+      const getConversation = await this.getConversation({ conversationId });
+      if (!getConversation) {
+        throw new ApiErrorHandler(404, "Conversation not found");
+      }
+
+      const createParticipants = participantUserIds.map((userId) => ({
+        conversationId,
+        userId,
+      }));
+
+      const response = await prisma.conversationParticipant.createMany({
+        data: createParticipants,
+      });
+      return response;
+    } catch (error) {
+      throw new ApiErrorHandler(
+        500,
+        "Failed to add participant to conversation",
+      );
+    }
+  }
+
+  async getConversationParticipants({
+    conversationId,
+  }: {
+    conversationId: string;
+  }) {
+    try {
+      const participants = await prisma.conversationParticipant.findMany({
+        where: { conversationId },
+        select: { userId: true },
+      });
+      return participants.map(
+        (participant: { userId: string }) => participant.userId,
+      );
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to get conversation participants");
+    }
+  }
+
+  async removeParticipantFromConversation({
+    conversationId,
+    participantUserId,
+  }: {
+    conversationId: string;
+    participantUserId: string;
+  }) {
+    try {
+      const conversation = await prisma.conversationParticipant.delete({
+        where: { conversationId, userId: participantUserId },
+      });
+      return conversation;
+    } catch (error) {
+      throw new ApiErrorHandler(
+        500,
+        "Failed to remove participant from conversation",
+      );
+    }
+  }
+
+  async getConversation({ conversationId }: { conversationId: string }) {
+    try {
+      const conversation = await prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          participants: true,
+        },
+      });
+      return conversation;
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to get conversation");
+    }
+  }
+
+  async getConversationsByReceiverId({
+    senderId,
+    receiverId,
+  }: {
+    senderId: string;
+    receiverId: string;
+  }) {
+    try {
+      const conversations = await prisma.conversation.findMany({
+        where: {
+          AND: [
+            {
+              participants: {
+                some: { userId: senderId },
+              },
+            },
+            {
+              participants: {
+                some: { userId: receiverId },
               },
             },
           ],
         },
         include: {
-          participants: true,
-        },
-      });
-
-      if (existingConversation) {
-        return existingConversation;
-      }
-
-      const conversation = await prisma.conversation.create({
-        data: {
-          type,
-          title: type === "GROUP" ? title : null,
-          createdById,
           participants: {
-            create: [{ userId: createdById }, { userId: receiverId }],
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+          messages: {
+            orderBy: {
+              createdAt: "asc",
+            },
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true,
+                },
+              },
+            },
           },
         },
-        include: {
-          participants: true,
+        orderBy: {
+          updatedAt: "desc",
         },
       });
-
-      return conversation;
+      return conversations;
     } catch (error) {
-      if (error instanceof ApiErrorHandler) {
-        throw error;
-      }
-      console.error("ChatService createChat error:", error);
-      throw new ApiErrorHandler(
-        500,
-        error instanceof Error
-          ? error.message
-          : "Failed to create conversation",
-      );
-    }
-  }
-
-  async addParticipant({
-    conversationId,
-    userId,
-    requestedById,
-  }: AddParticipantParams) {
-    try {
-      const conversation = await prisma.conversation.findFirst({
-        where: { id: conversationId },
-        include: { participants: true },
-      });
-
-      if (!conversation) {
-        throw new ApiErrorHandler(404, "Conversation not found");
-      }
-
-      if (conversation.type === "DIRECT") {
-        throw new ApiErrorHandler(
-          400,
-          "Cannot add participants to a direct conversation",
-        );
-      }
-
-      const participantUserIds = conversation.participants.map(
-        (participant: { userId: string }) => participant.userId,
-      );
-
-      if (!participantUserIds.includes(requestedById)) {
-        throw new ApiErrorHandler(
-          403,
-          "You are not a participant of this conversation",
-        );
-      }
-
-      if (participantUserIds.includes(userId)) {
-        throw new ApiErrorHandler(409, "User is already a participant");
-      }
-
-      const user = await prisma.user.findFirst({ where: { id: userId } });
-      if (!user) {
-        throw new ApiErrorHandler(404, "User not found");
-      }
-
-      const participant = await prisma.conversationParticipant.create({
-        data: {
-          conversationId,
-          userId,
-        },
-      });
-
-      return participant;
-    } catch (error) {
-      if (error instanceof ApiErrorHandler) {
-        throw error;
-      }
-      console.error("ChatService addParticipant error:", error);
-      throw new ApiErrorHandler(
-        500,
-        error instanceof Error
-          ? error.message
-          : "Failed to add conversation participant",
-      );
+      throw new ApiErrorHandler(500, "Failed to get conversations");
     }
   }
 
   async createMessage({
     conversationId,
+    type = "TEXT",
     senderId,
-    type,
     message,
     attachment,
-  }: CreateMessageParams) {
+  }: CreateMessageInputType) {
     try {
-      const conversation = await prisma.conversation.findFirst({
-        where: { id: conversationId },
-        include: { participants: true },
+      const response = await prisma.message.create({
+        data: { conversationId, senderId, message, type, attachment },
       });
-
-      if (!conversation) {
-        throw new ApiErrorHandler(404, "Conversation not found");
-      }
-
-      const senderIsParticipant = conversation.participants.some(
-        (participant: { userId: string }) => participant.userId === senderId,
-      );
-
-      if (!senderIsParticipant) {
-        throw new ApiErrorHandler(
-          403,
-          "You are not a participant of this conversation",
-        );
-      }
-
-      const createdMessage = await prisma.message.create({
-        data: {
-          conversationId,
-          senderId,
-          type: type ?? "TEXT",
-          message,
-          attachment,
-        },
-      });
-
-      return createdMessage;
+      return response;
     } catch (error) {
-      if (error instanceof ApiErrorHandler) {
-        throw error;
-      }
-      console.error("ChatService createMessage error:", error);
-      throw new ApiErrorHandler(
-        500,
-        error instanceof Error ? error.message : "Failed to create message",
-      );
+      throw new ApiErrorHandler(500, "Failed to create message");
     }
   }
+
+  async deleteMessage({ messageId }: { messageId: string }) {
+    try {
+      const message = await prisma.message.delete({
+        where: { id: messageId },
+      });
+      return message;
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to delete message");
+    }
+  }
+
+  async deleteConversation({ conversationId }: { conversationId: string }) {
+    try {
+      const conversation = await prisma.conversation.delete({
+        where: { id: conversationId },
+      });
+      return conversation;
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error?.code === "P2025"
+      ) {
+        throw new ApiErrorHandler(404, "Conversation not found");
+      } else {
+        throw new ApiErrorHandler(500, "Failed to delete conversation");
+      }
+    }
+  }
+
+  async getListOfConversationedUser ({senderId}: {senderId: string}) {
+    try {
+      const conversations = await prisma.conversation.findMany({
+        where: {
+          participants: {
+            some: { userId: senderId },
+          },
+        },
+        include: {
+          participants: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          messages: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              sender: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+            take: 1
+          },
+        },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: 1
+      });
+      return conversations;
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to get conversation user list");
+    }
+  }
+
+
 }

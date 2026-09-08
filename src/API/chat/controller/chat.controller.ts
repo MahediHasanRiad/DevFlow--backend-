@@ -1,77 +1,95 @@
+import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import { apiResponse } from "../../../shared/apiResponseHandler.js";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
-import {
-  addParticipantSchema,
-  CreateChatInputSchema,
-  createMessageSchema,
-} from "../schema/chat.schema.js";
-import { ChatService } from "../service/chat.service.js";
+import { CloudinaryFileUpload } from "../../../shared/cloudinary.js";
+import { createConversationSchema } from "../schema/chat.schema.js";
+import { ConversationService } from "../service/chat.service.js";
 
-export const createChatController = asyncHandler(async (req, res) => {
+export const createMessageController = asyncHandler(async (req, res) => {
+  
   const userId = req.user?.id;
   if (!userId) {
     throw new ApiErrorHandler(401, "Unauthorized");
   }
 
-  const { type, title, receiverId } = CreateChatInputSchema.parse(req.body);
+  // file upload
+  const attachment = req.file?.path as string
+  let attachmentURL : string | undefined;
+  if(attachment){
+    attachmentURL = await CloudinaryFileUpload(attachment)
+  }
 
-  const chatService = new ChatService();
+  const payload = {
+    ...req.body,
+    attachment: attachmentURL
+  }
 
-  const conversation = await chatService.createChat({
-    type,
-    title,
+  const { type, title, receiverId, message } =
+    createConversationSchema.parse(payload);
+ 
+  const conversationService = new ConversationService();
+  // check conversation already exist or not
+  const existsConversation = await conversationService.existsConversation({
     receiverId,
     createdById: userId,
   });
 
-  res
-    .status(201)
-    .json(new apiResponse(conversation, "Conversation created successfully"));
-});
+  if (existsConversation) {
+    const chatMessage = await conversationService.createMessage({
+      conversationId: existsConversation?.id,
+      senderId: userId,
+      type: message ? 'TEXT' : 'FILE',
+      message: message || undefined,
+      attachment: attachmentURL || undefined,
+    });
+    return res
+      .status(201)
+      .json({ message: "Message created successfully", chatMessage });
+  } else {
+    // create new conversation and add participant and create initial message
+    const { conversation, chatMessage } = await prisma.$transaction(
+      async (tx:any) => {
+        const newConversation = await tx.conversation.create({
+          data: {
+            type,
+            title: title || undefined,
+            createdById: userId,
+          },
+        });
 
-export const addParticipantController = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
-  if (!userId) {
-    throw new ApiErrorHandler(401, "Unauthorized");
+        const participantData = [
+          { conversationId: newConversation.id, userId },
+          ...(receiverId
+            ? [{ conversationId: newConversation.id, userId: receiverId }]
+            : []),
+        ];
+
+        await tx.conversationParticipant.createMany({
+          data: participantData,
+          skipDuplicates: true,
+        });
+
+        let initialMessage = null;
+        if (message || attachment) {
+          initialMessage = await tx.message.create({
+            data: {
+              conversationId: newConversation.id,
+              senderId: userId,
+              type: message ? 'TEXT' : 'FILE',
+              message: message || null,
+              attachment: attachmentURL || null,
+            },
+          });
+        }
+
+        return {
+          conversation: newConversation,
+          chatMessage: initialMessage,
+        };
+      },
+    );
+    return res
+      .status(201)
+      .json({ message: "Message created successfully", chatMessage });
   }
-
-  const { conversationId, userId: participantUserId } =
-    addParticipantSchema.parse(req.body);
-
-  const chatService = new ChatService();
-
-  const participant = await chatService.addParticipant({
-    conversationId,
-    userId: participantUserId,
-    requestedById: userId,
-  });
-
-  res
-    .status(201)
-    .json(new apiResponse(participant, "Participant added successfully"));
-});
-
-export const createMessageController = asyncHandler(async (req, res) => {
-  const userId = req.user?.id;
-  if (!userId) {
-    throw new ApiErrorHandler(401, "Unauthorized");
-  }
-
-  const { conversationId, type, message, attachment } =
-    createMessageSchema.parse(req.body);
-
-  const chatService = new ChatService();
-
-  const createdMessage = await chatService.createMessage({
-    conversationId,
-    senderId: userId,
-    type,
-    message,
-    attachment,
-  });
-
-  res
-    .status(201)
-    .json(new apiResponse(createdMessage, "Message sent successfully"));
 });

@@ -12,7 +12,7 @@ import { projectRouter } from "./API/project/router/project.router.js";
 import { projectMemberRouter } from "./API/project-member/router/projectMember.router.js";
 import { dailyPlanRequestRouter } from "./API/daily-plan-request/router/dailyPlanRequest.router.js";
 import dailyPlanRouter from "./API/daily-plan/router/daily-plan.router.js";
-import { chatRouter, conversationRouter } from "./API/chat/router/chat.router.js";
+import { conversationRouter } from "./API/chat/router/chat.router.js";
 import { organizationRouter } from "./API/Organization/router/organization.router.js";
 import { organizationMemberRouter } from "./API/organization-member/router/organization-member.router.js";
 import { roleAndPermissionRouter } from "./API/role-and-permission/router/roleAndPermission.router.js";
@@ -54,12 +54,11 @@ app.use("/project", projectRouter);
 app.use("/project-member", projectMemberRouter);
 app.use("/daily-plan-request", dailyPlanRequestRouter);
 app.use("/daily-plan", dailyPlanRouter);
-app.use("/chat", chatRouter);
 app.use("/organization", organizationRouter);
 app.use("/organization-member", organizationMemberRouter);
 app.use("/verification", roleAndPermissionRouter);
 app.use("/role-base-permission", roleBasePermissionRouter);
-app.use('/conversation', conversationRouter)
+app.use('/message', conversationRouter)
 
 
 // Global Error Handler
