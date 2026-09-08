@@ -1,13 +1,9 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import type {
-  ConversationInputType,
-  MessageInputType,
-} from "../schema/chat.schema.js";
+import type { ConversationInputType, CreateMessageInputType } from "../schema/chat.schema.js";
 
 export class ConversationService {
-  
   async existsConversation({
     receiverId,
     createdById,
@@ -18,14 +14,18 @@ export class ConversationService {
     try {
       const conversation = await prisma.conversation.findFirst({
         where: {
+          type: "DIRECT",
           AND: [
             {
               participants: {
                 some: { userId: receiverId },
               },
             },
-            { createdById },
-            { type: "DIRECT" },
+            {
+              participants: {
+                some: { userId: createdById },
+              },
+            },
           ],
         },
       });
@@ -34,18 +34,29 @@ export class ConversationService {
       throw new ApiErrorHandler(500, "Failed to check if conversation exists");
     }
   }
-  
+
   async createConversation({
-    type,
+    type = "DIRECT",
     title,
     createdById,
+    receiverId,
   }: ConversationInputType) {
     try {
+      const participants = [
+        { userId: createdById },
+        ...(receiverId && receiverId !== createdById
+          ? [{ userId: receiverId }]
+          : []),
+      ];
+
       const conversation = await prisma.conversation.create({
         data: {
           type,
           title,
           createdById,
+          participants: {
+            create: participants,
+          },
         },
       });
       return conversation;
@@ -62,13 +73,9 @@ export class ConversationService {
     participantUserId: string;
   }) {
     try {
-
       const getConversation = await this.getConversation({ conversationId });
       if (!getConversation) {
         throw new ApiErrorHandler(404, "Conversation not found");
-      }
-      if(getConversation.type === "DIRECT") {
-        throw new ApiErrorHandler(400, "Only group conversations can add participants");
       }
 
       const response = await prisma.conversationParticipant.create({
@@ -83,6 +90,24 @@ export class ConversationService {
         500,
         "Failed to add participant to conversation",
       );
+    }
+  }
+
+  async getConversationParticipants({
+    conversationId,
+  }: {
+    conversationId: string;
+  }) {
+    try {
+      const participants = await prisma.conversationParticipant.findMany({
+        where: { conversationId },
+        select: { userId: true },
+      });
+      return participants.map(
+        (participant: { userId: string }) => participant.userId,
+      );
+    } catch (error) {
+      throw new ApiErrorHandler(500, "Failed to get conversation participants");
     }
   }
 
@@ -106,34 +131,27 @@ export class ConversationService {
     }
   }
 
-  async getConversation({
-    conversationId,
-  }: {
-    conversationId: string;
-  }) {
+  async getConversation({ conversationId }: { conversationId: string }) {
     try {
-      const conversation = await prisma.conversation.findMany({
+      const conversation = await prisma.conversation.findUnique({
         where: { id: conversationId },
         include: {
           participants: true,
         },
-        orderBy: {
-          createdAt: "desc",
-        },
       });
       return conversation;
-    }catch (error) {
+    } catch (error) {
       throw new ApiErrorHandler(500, "Failed to get conversation");
     }
   }
 
   async createMessage({
     conversationId,
-    senderId,
     type = "TEXT",
+    senderId,
     message,
     attachment,
-  }: MessageInputType) {
+  }: CreateMessageInputType) {
     try {
       const response = await prisma.message.create({
         data: { conversationId, senderId, message, type, attachment },
@@ -142,13 +160,9 @@ export class ConversationService {
     } catch (error) {
       throw new ApiErrorHandler(500, "Failed to create message");
     }
-  } 
+  }
 
-  async deleteMessage({
-    messageId,
-  }: {
-    messageId: string;
-  }) {
+  async deleteMessage({ messageId }: { messageId: string }) {
     try {
       const message = await prisma.message.delete({
         where: { id: messageId },
@@ -159,23 +173,21 @@ export class ConversationService {
     }
   }
 
-  async deleteConversation({
-    conversationId,
-  }: {
-    conversationId: string;
-  }) {
+  async deleteConversation({ conversationId }: { conversationId: string }) {
     try {
       const conversation = await prisma.conversation.delete({
         where: { id: conversationId },
       });
-    return conversation;
+      return conversation;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError && error?.code === "P2025") {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error?.code === "P2025"
+      ) {
         throw new ApiErrorHandler(404, "Conversation not found");
       } else {
         throw new ApiErrorHandler(500, "Failed to delete conversation");
       }
     }
   }
-  
 }
