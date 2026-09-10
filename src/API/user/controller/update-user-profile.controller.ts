@@ -34,8 +34,6 @@ export const UpdateUserProfileController = asyncHandler(async (req, res) => {
   if (parsedData.email !== undefined) updatedData.email = parsedData.email;
   if (parsedData.contact !== undefined) updatedData.contact = parsedData.contact;
   if (parsedData.avatar !== undefined) updatedData.avatar = parsedData.avatar;
-  if (parsedData.role !== undefined) updatedData.role = parsedData.role;
-  if (parsedData.designation !== undefined) updatedData.designation = parsedData.designation;
 
   // 4. Update Prisma Database
   const updatedUser = await prisma.user.update({

@@ -7,6 +7,7 @@ import type {
 } from "../schema/chat.schema.js";
 
 export class ConversationService {
+  
   async existsConversation({
     receiverId,
     createdById,
