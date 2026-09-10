@@ -18,9 +18,30 @@ import { organizationMemberRouter } from "./API/organization-member/router/organ
 import { roleAndPermissionRouter } from "./API/role-and-permission/router/roleAndPermission.router.js";
 import { roleBasePermissionRouter } from "./API/role-base-permission/router/role-base-permission.router.js";
 
-const app = express();
+import cluster from 'node:cluster';
+import http from 'node:http';
+import { availableParallelism } from 'node:os';
+import process from 'node:process';
 
-// Global Middlewares
+const numCPUs = availableParallelism();
+
+if (cluster.isPrimary) {
+  console.log(`Primary ${process.pid} is running`);
+
+  // Fork workers.
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+
+    cluster.fork();
+  });
+} else {
+  const app = express();
+
+  // Global Middlewares
 app.use(
   cors({
     origin: ["http://localhost:5173"],
@@ -73,4 +94,6 @@ await connectRedis();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}...`);
-});
+})
+
+}

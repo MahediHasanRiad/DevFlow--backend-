@@ -11,7 +11,7 @@ import { addParticipantsController } from "../controller/add-participents.contro
 
 const conversationRouter = Router();
 
-conversationRouter.post("/create", authVerify, upload.single("attachment"), createMessageController);
+conversationRouter.post("/create", authVerify, upload.single("attachment"), createMessageController); 
 conversationRouter.get('/get-all-conversations/:receiverId', authVerify, getConversationByReceiverIdController);
 conversationRouter.get('/get-conversations-user-lists', authVerify, getConversationUserListController)
 conversationRouter.delete('/delete-message/:messageId', authVerify, deleteSingleMessageController)
