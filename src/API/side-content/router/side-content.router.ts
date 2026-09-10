@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authVerify } from "../../../middleware/auth.middleware.js";
-import { RestrictTo } from "../../../shared/restricet-to.js";
+
 import { FindPrivacyPolicyController, PrivacyPolicyController, UpdatePrivacyPolicyController } from "../controller/privacy-policy.controller.js";
 import { createAboutUsController, FindAboutUsController, UpdateAboutUsController } from "../controller/about-us.controller.js";
 import { FindTermsAndConditionController, termsAndConditionController, UpdateTermsAndConditionController } from "../controller/terms-condition.controller.js";
