@@ -19,9 +19,9 @@ import { roleAndPermissionRouter } from "./API/role-and-permission/router/roleAn
 import { roleBasePermissionRouter } from "./API/role-base-permission/router/role-base-permission.router.js";
 
 import cluster from 'node:cluster';
-import http from 'node:http';
 import { availableParallelism } from 'node:os';
 import process from 'node:process';
+import { initSocket } from "./config/socket-io.js";
 
 const numCPUs = availableParallelism();
 
@@ -86,13 +86,13 @@ app.use('/message', conversationRouter)
 app.use(globalErrorHandler);
 
 // Initialize Socket.io with the populated app
-// const httpServer = initSocket(app);
+const httpServer = initSocket(app);
 const PORT = Number(process.env.SERVER_PORT) || 5000;
 
 // connect redis server in app
 await connectRedis();
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}...`);
 })
 
