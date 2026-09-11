@@ -6,7 +6,7 @@ import { asyncHandler } from "../shared/asyncHandler.js";
 
 const authVerify = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
-    // 1. Extract token from cookie or Authorization header
+    // Extract token from cookie or Authorization header
     const authHeader = req.header("Authorization");
     const token =
       req.cookies?.accessToken ||
@@ -16,7 +16,7 @@ const authVerify = asyncHandler(
       throw createError(401, "Unauthorized: No token provided");
     }
 
-    // 2. Verify JWT token safely
+    // Verify JWT token safely
     let payload: JwtPayload & { id?: string };
     try {
       payload = jwt.verify(
@@ -34,7 +34,7 @@ const authVerify = asyncHandler(
       throw createError(401, "Authentication failed");
     }
 
-    // 3. Validate payload and check if user exists in database
+    // Validate payload and check if user exists in database
     if (!payload?.id) {
       throw createError(401, "Invalid token payload");
     }
@@ -47,7 +47,7 @@ const authVerify = asyncHandler(
       throw createError(404, "User not found");
     }
     console.log('pay', payload)
-    // 4. Attach user object to request
+    // Attach user object to request
     req.user = user;
     req!.user!.orgId = payload.orgId as string
     req.user!.orgRole = payload.orgRole as string

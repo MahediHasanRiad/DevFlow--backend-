@@ -12,7 +12,7 @@ export class SubscriptionService {
   async createSubscription({
     name,
     description,
-    type,
+    type = "FREE",
     monthlyRegularPrice,
     monthlyDiscountedPrice,
     yearlyRegularPrice,
@@ -20,125 +20,85 @@ export class SubscriptionService {
     features,
   }: SubscriptionPlanInput) {
     try {
-      const subscriptionPlan = await this.createSubscriptionPlan({
-        name,
-        description,
-        type,
-        monthlyRegularPrice,
-        monthlyDiscountedPrice,
-        yearlyRegularPrice,
-        yearlyDiscountedPrice,
-        features,
-      });
-      await this.createFeatures({ planId: subscriptionPlan.id, features });
+      // Check if plan name already exists for this organization
+      const existingPlan = await this.findSubscriptionPlanByName(name);
+      if (existingPlan) {
+        throw new ApiErrorHandler(
+          409,
+          `Subscription plan '${name}' already exists for this organization`,
+        );
+      }
 
-      // check already exist
-      const existSubscription = await this.findSubscriptionByPlanId(subscriptionPlan.id);
-      if(existSubscription) return new ApiErrorHandler(400, "Subscription already exists"); 
+      const now = new Date();
+      const currentPeriodEnd = new Date(
+        now.getTime() + 30 * 24 * 60 * 60 * 1000,
+      );
 
+      // Atomically create Subscription + SubscriptionPlan + PlanFeatures via nested write
       const subscription = await prisma.subscription.create({
         data: {
-          organizationId: this.orgId,
-          planId: subscriptionPlan?.id,
+          organization: {
+            connect: {
+              id: this.orgId,
+            },
+          },
+          currentPeriodStart: now,
+          currentPeriodEnd: currentPeriodEnd,
+          trialEndsAt: currentPeriodEnd,
+          price: monthlyDiscountedPrice ?? monthlyRegularPrice ?? 0,
+          plan: {
+            create: {
+              organizationId: this.orgId,
+              name,
+              description,
+              type,
+              monthlyRegularPrice,
+              monthlyDiscountedPrice,
+              yearlyRegularPrice,
+              yearlyDiscountedPrice,
+              features: features?.length
+                ? {
+                    create: [...new Set(features)].map((feature) => ({
+                      feature,
+                    })),
+                  }
+                : undefined,
+            },
+          },
         },
         include: {
           organization: {
             select: {
+              id: true,
               name: true,
               slug: true,
             },
           },
-          subscriptionPlan: {
-            select: {
-              name: true,
-              description: true,
-              type: true,
-              monthlyPrice: true,
-              yearlyPrice: true,
+          plan: {
+            include: {
               features: {
                 select: {
+                  id: true,
                   feature: true,
+                  enabled: true,
+                  limit: true,
                 },
               },
             },
           },
         },
       });
-      console.log('sub', subscription)
+
       return subscription;
     } catch (error: any) {
-      if (error instanceof ApiErrorHandler)
-        throw new ApiErrorHandler(error.statusCode, error.message);
-    }
-  }
-
-  async createSubscriptionPlan({
-    name,
-    description,
-    type = "FREE",
-    monthlyRegularPrice,
-    monthlyDiscountedPrice,
-    yearlyRegularPrice,
-    yearlyDiscountedPrice,
-  }: SubscriptionPlanInput) {
-    try {
-      const exists = await this.findSubscriptionPlanByName(name);
-      if (exists) {
-        throw new Error(
-          `Subscription plan with name ${name} already exists for organization ${this.orgId}`,
-        );
+      if (error instanceof ApiErrorHandler) {
+        throw error;
       }
-
-      const response = await prisma.subscriptionPlan.create({
-        data: {
-          organizationId: this.orgId,
-          name,
-          description,
-          type,
-          monthlyRegularPrice,
-          monthlyDiscountedPrice,
-          yearlyRegularPrice,
-          yearlyDiscountedPrice,
-        },
-      });
-      return response;
-    } catch (error) {
-      console.log(error);
-      throw new Error(
-        `Failed to create subscription for organization ${this.orgId}`,
-        { cause: error },
+      throw new ApiErrorHandler(
+        500,
+        error?.message ||
+          `Failed to create subscription for organization ${this.orgId}`,
       );
-    }
-  }
-
-  async createFeatures({
-    planId,
-    features,
-  }: {
-    planId: string;
-    features: string[];
-  }) {
-    try {
-      // check already exist or not
-      const newFeatures: string[] = [];
-      const findExistsPlanFeatures = await this.findFeaturesByNames(features);
-
-      if (findExistsPlanFeatures.length > 0) {
-        findExistsPlanFeatures.forEach((feature: any) => {
-          newFeatures.push(feature.feature);
-        });
-      }
-
-      const subscriptionFeatures = await prisma.subscriptionFeature.createMany({
-        data: newFeatures.map((feature) => ({
-          planId,
-          feature,
-        })),
-      });
-      return subscriptionFeatures;
-    } catch (error:any) {
-      console.log(error);
-      throw new ApiErrorHandler(error);
     }
   }
 
@@ -147,33 +107,13 @@ export class SubscriptionService {
       const response = await prisma.subscriptionPlan.findFirst({
         where: {
           organizationId: this.orgId,
-          name: name,
+          name,
         },
       });
       return response;
     } catch (error: any) {
-      if (error instanceof ApiErrorHandler)
-        throw new ApiErrorHandler(error.statusCode, error.message);
+      if (error instanceof ApiErrorHandler) throw error;
       throw new ApiErrorHandler(500, "Internal server error");
-    }
-  }
-
-  async findFeaturesByNames(features: string[]) {
-    try {
-      const response = await prisma.planFeature.findMany({
-        where: {
-          feature: {
-            in: features,
-          },
-        },
-      });
-      return response;
-    } catch (error) {
-      console.log(error);
-      throw new Error(
-        `Failed to find features for organization ${this.orgId}`,
-        { cause: error },
-      );
     }
   }
 
@@ -182,14 +122,17 @@ export class SubscriptionService {
       const response = await prisma.subscription.findFirst({
         where: {
           organizationId: this.orgId,
-          planId: planId,
+          planId,
         },
         include: {
-          subscriptionPlan: {
+          plan: {
             include: {
               features: {
                 select: {
+                  id: true,
                   feature: true,
+                  enabled: true,
+                  limit: true,
                 },
               },
             },
@@ -198,10 +141,123 @@ export class SubscriptionService {
       });
       return response;
     } catch (error: any) {
-      if (error instanceof ApiErrorHandler)
-        throw new ApiErrorHandler(error.statusCode, error.message);
-      throw new ApiErrorHandler(500, error);
+      if (error instanceof ApiErrorHandler) throw error;
+      throw new ApiErrorHandler(
+        500,
+        error?.message || "Failed to find subscription",
+      );
     }
   }
 
+  async findSingleSubscription(id: string) {
+    try {
+      const response = await prisma.subscription.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          plan: {
+            include: {
+              features: {
+                select: {
+                  id: true,
+                  feature: true,
+                  enabled: true,
+                  limit: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return response;
+    } catch (error: any) {
+      if (error instanceof ApiErrorHandler) throw error;
+      throw new ApiErrorHandler(
+        500,
+        error?.message || "Failed to find subscription",
+      );
+    }
+  }
+
+  async findAllSubscriptions() {
+    try {
+      const response = await prisma.subscription.findMany({
+        where: {
+          organizationId: this.orgId,
+        },
+        include: {
+          plan: {
+            include: {
+              features: {
+                select: {
+                  id: true,
+                  feature: true,
+                  enabled: true,
+                  limit: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return response;
+    } catch (error: any) {
+      if (error instanceof ApiErrorHandler) throw error;
+      throw new ApiErrorHandler(
+        500,
+        error?.message || "Failed to fetch subscriptions",
+      );
+    }
+  }
+  
+  async deleteSubscriptionById(id: string){
+    try{
+      await prisma.subscription.delete({
+        where: {
+          id,
+        },
+      });
+      return null;
+    }catch(error: any){
+      if (error instanceof ApiErrorHandler) throw error;
+      throw new ApiErrorHandler(
+        500,
+        error?.message || "Failed to delete subscription",
+      );
+    }
+  }
+
+  async deleteSubscriptionPlan(planId: string) {
+    try{
+      const getSubscription = await prisma.subscription.findFirst({
+        where: {
+          planId,
+          organizationId: this.orgId
+        }
+      })
+      if(getSubscription){
+        await this.deleteSubscriptionById(getSubscription.id)
+      }
+      await prisma.subscriptionPlan.delete({
+        where: {
+          id: planId,
+        },
+      });
+      return null;
+    }catch(error: any){
+      if (error instanceof ApiErrorHandler) throw error;
+      throw new ApiErrorHandler(
+        500,
+        error?.message || "Failed to delete subscription",
+      );
+    }
+  }
 }
