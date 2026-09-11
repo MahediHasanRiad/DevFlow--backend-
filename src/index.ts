@@ -22,14 +22,17 @@ import cluster from 'node:cluster';
 import { availableParallelism } from 'node:os';
 import process from 'node:process';
 import { initSocket } from "./config/socket-io.js";
+import { subscriptionRouter } from "./API/subscription/router/subscription.router.js";
 
 const numCPUs = availableParallelism();
+const PORT = Number(process.env.SERVER_PORT) || 5000; 
 
 if (cluster.isPrimary) {
   console.log(`Primary ${process.pid} is running`);
 
   // Fork workers.
-  for (let i = 0; i < numCPUs; i++) {
+  // for (let i = 0; i < numCPUs; i++) {
+  for (let i = 0; i < 4; i++) {
     cluster.fork();
   }
 
@@ -38,6 +41,8 @@ if (cluster.isPrimary) {
 
     cluster.fork();
   });
+
+  
 } else {
   const app = express();
 
@@ -80,14 +85,14 @@ app.use("/organization-member", organizationMemberRouter);
 app.use("/verification", roleAndPermissionRouter);
 app.use("/role-base-permission", roleBasePermissionRouter);
 app.use('/message', conversationRouter)
+app.use('/subscription', subscriptionRouter)
 
 
 // Global Error Handler
 app.use(globalErrorHandler);
 
 // Initialize Socket.io with the populated app
-const httpServer = initSocket(app);
-const PORT = Number(process.env.SERVER_PORT) || 5000;
+const httpServer = initSocket(app)
 
 // connect redis server in app
 await connectRedis();

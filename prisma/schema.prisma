@@ -114,6 +114,21 @@ enum DeviceType {
   IOS
 }
 
+enum PlanType {
+  FREE
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  EXPIRED
+}
+
 model Organization {
   id   String  @id @default(uuid())
   name String
@@ -131,6 +146,8 @@ model Organization {
   deviceTokens        DeviceToken[]        @relation("DeviceTokenOrganization")
   roles               Role[]
   permissions         Permission[]
+  subscriptions       Subscription[]
+  subscriptionPlans   SubscriptionPlan[]
 }
 
 model OrganizationMember {
@@ -520,4 +537,79 @@ model DeviceToken {
 
   @@index([userId])
   @@index([lastUsedAt])
+}
+
+model SubscriptionPlan {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  description    String?
+  type           PlanType     @default(FREE)
+
+  // Base price for this plan
+  monthlyRegularPrice    Decimal? @db.Decimal(10, 2)
+  monthlyDiscountedPrice Decimal? @db.Decimal(10, 2)
+  yearlyRegularPrice     Decimal? @db.Decimal(10, 2)
+  yearlyDiscountedPrice  Decimal? @db.Decimal(10, 2)
+  currency               String?  @default("USD")
+
+  // Whether users can subscribe to this plan
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[]
+  features      PlanFeature[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id String @id @default(uuid())
+
+  organizationId String
+  planId         String
+
+  status SubscriptionStatus @default(TRIALING)
+
+  price Decimal? @db.Decimal(10, 2)
+
+  currency String @default("USD")
+
+  startedAt          DateTime  @default(now())
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  trialEndsAt        DateTime?
+
+  canceledAt        DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  plan         SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([planId])
+  @@map("subscriptions")
+}
+
+model PlanFeature {
+  id String @id @default(uuid())
+
+  planId  String
+  feature String
+  enabled Boolean @default(true)
+
+  limit Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@unique([planId])
+  @@map("plan_features")
 }
