@@ -3,7 +3,25 @@ import { Server } from "socket.io";
 import { socketAuthMiddleware } from "../middleware/socket-io.middleware.js";
 import { prisma } from "../lib/prisma.js";
 
+import { createClient } from "redis";
+import { createAdapter } from "@socket.io/redis-adapter";
+
 let io: Server;
+
+// setup sharedAdapter -------------------
+const pubClient = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
+const subClient = pubClient.duplicate();
+
+pubClient.on("error", (err) => console.error("Redis PubClient Error:", err));
+subClient.on("error", (err) => console.error("Redis SubClient Error:", err));
+
+await Promise.all([
+  pubClient.connect(),
+  subClient.connect()
+]);
+
+
+// setup sharedAdapter end ----------------
 
 export const initSocket = (app: any) => {
   const httpServer = createServer(app);
@@ -16,6 +34,7 @@ export const initSocket = (app: any) => {
       methods: ["GET", "POST"],
       credentials: true,
     },
+    adapter: createAdapter(pubClient, subClient)
   });
 
   io.use(socketAuthMiddleware);
