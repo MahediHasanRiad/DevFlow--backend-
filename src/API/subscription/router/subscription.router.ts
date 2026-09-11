@@ -4,6 +4,7 @@ import { createSubscriptionController } from "../controller/create-subscription.
 import { findSingleSubscription } from "../controller/find-subscription.controller.js";
 import { findAllSubscriptionController } from "../controller/find-all-subscription.controller.js";
 import { deleteSubscriptionController } from "../controller/delete-subscription.controller.js";
+import { updateSubscriptionPlanController } from "../controller/update-subscription.controller.js";
 
 const subscriptionRouter = Router();
 
@@ -13,7 +14,8 @@ subscriptionRouter.get(
   authVerify,
   findSingleSubscription,
 );
-subscriptionRouter.get('/find-all-subscriptions',authVerify, findAllSubscriptionController)
+subscriptionRouter.patch('/update/:subscriptionPlanId',authVerify, updateSubscriptionPlanController)
 subscriptionRouter.delete('/delete/:subscriptionPlanId',authVerify, deleteSubscriptionController)
+subscriptionRouter.get('/find-all-subscriptions',authVerify, findAllSubscriptionController)
 
 export { subscriptionRouter };

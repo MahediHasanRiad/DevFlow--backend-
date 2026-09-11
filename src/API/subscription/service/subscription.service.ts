@@ -1,6 +1,12 @@
 import { prisma } from "../../../lib/prisma.js";
 import { ApiErrorHandler } from "../../../shared/apiErrorHandler.js";
-import type { SubscriptionPlanInput } from "../schema/subscription.schema.js";
+import type { SubscriptionPlanInput, UpdateSubscriptionInput } from "../schema/subscription.schema.js";
+
+interface UpdateSubscriptionPlanInput extends UpdateSubscriptionInput {
+  planId: string
+}
+  
+
 
 export class SubscriptionService {
   private orgId: string;
@@ -102,6 +108,54 @@ export class SubscriptionService {
     }
   }
 
+  async updateSubscriptionPlan({planId, ...rest}:UpdateSubscriptionPlanInput){
+    try{
+      const updatePlan = await prisma.subscriptionPlan.update({
+        where: {
+          id: planId,
+          organizationId: this.orgId,
+        },
+        data: {
+          name: rest?.name,
+          description: rest?.description,
+          type: rest?.type,
+          monthlyRegularPrice: rest?.monthlyRegularPrice,
+          monthlyDiscountedPrice: rest?.monthlyDiscountedPrice,
+          yearlyRegularPrice: rest?.yearlyRegularPrice,
+          yearlyDiscountedPrice: rest?.yearlyDiscountedPrice,
+          features: rest?.features?.length
+            ? {
+                deleteMany: {
+                  planId,
+                },
+                create: [...new Set(rest?.features)].map((feature) => ({
+                  feature,
+                })),
+              }
+            : undefined,
+        },
+        include: {
+          features: {
+            select: {
+              id: true,
+              feature: true,
+              enabled: true,
+              limit: true,
+            },
+          },
+        },
+      });
+      return updatePlan;
+    }catch(error: any){
+      if (error instanceof ApiErrorHandler) throw error;
+      throw new ApiErrorHandler(
+        500,
+        error?.message || "Failed to update subscription plan",
+      );
+    }
+
+  }
+    
   async findSubscriptionPlanByName(name: string) {
     try {
       const response = await prisma.subscriptionPlan.findFirst({
@@ -260,4 +314,5 @@ export class SubscriptionService {
       );
     }
   }
-}
+
+} 
