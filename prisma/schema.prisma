@@ -129,6 +129,13 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
 model Organization {
   id   String  @id @default(uuid())
   name String
@@ -210,6 +217,7 @@ model User {
   organizationMembers  OrganizationMember[]
   createdOrganizations Organization[]       @relation("CreatedOrganizations")
   deviceTokens         DeviceToken[]
+  payments             Payment[]
 
   @@index([id, email])
 }
@@ -561,6 +569,7 @@ model SubscriptionPlan {
 
   subscriptions Subscription[]
   features      PlanFeature[]
+  payments      Payment[]
 
   @@map("subscription_plans")
 }
@@ -614,3 +623,27 @@ model PlanFeature {
   @@index([planId])
   @@map("plan_features")
 }
+
+model Payment {
+  id              String        @id @default(uuid())
+  userId          String
+  planId          String?
+  amount          Float
+  currency        String        @default("USD")
+  status          PaymentStatus @default(PENDING)
+  paymentMethod   String
+  transactionId   String?       @unique
+  gatewayResponse Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations (Adjust model names if your User/Project models differ)
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([transactionId])
+  @@map("payments")
+}
+
+

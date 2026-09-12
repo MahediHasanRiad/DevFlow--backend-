@@ -23,6 +23,7 @@ import { availableParallelism } from 'node:os';
 import process from 'node:process';
 import { initSocket } from "./config/socket-io.js";
 import { roleBasePermissionRouter } from "./API/role-base-permission/router/role-base-permission.router.js";
+import { paymentRouter } from "./API/payment/router/payment.router.js";
 
 const numCPUs = availableParallelism();
 
@@ -80,7 +81,10 @@ if (cluster.isPrimary) {
   app.use("/verification", roleAndPermissionRouter);
   app.use("/role-base-permission", roleBasePermissionRouter);
   app.use('/message', conversationRouter);
-
+  app.use('/payment', paymentRouter);
+  
+  
+  
   // Global Error Handler
   app.use(globalErrorHandler);
 

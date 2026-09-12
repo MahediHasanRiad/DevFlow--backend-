@@ -14,8 +14,8 @@ subscriptionRouter.get(
   authVerify,
   findSingleSubscription,
 );
-subscriptionRouter.patch('/update/:subscriptionPlanId',authVerify, updateSubscriptionPlanController)
-subscriptionRouter.delete('/delete/:subscriptionPlanId',authVerify, deleteSubscriptionController)
-subscriptionRouter.get('/find-all-subscriptions',authVerify, findAllSubscriptionController)
+subscriptionRouter.patch('/update/:subscriptionPlanId', authVerify, updateSubscriptionPlanController)
+subscriptionRouter.delete('/delete/:subscriptionPlanId', authVerify, deleteSubscriptionController)
+subscriptionRouter.get('/find-all-subscriptions', authVerify, findAllSubscriptionController)
 
 export { subscriptionRouter };
