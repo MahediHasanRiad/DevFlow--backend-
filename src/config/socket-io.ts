@@ -9,6 +9,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 let io: Server;
 
 // setup sharedAdapter -------------------
+
 const pubClient = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
 const subClient = pubClient.duplicate();
 
@@ -19,7 +20,6 @@ await Promise.all([
   pubClient.connect(),
   subClient.connect()
 ]);
-
 
 // setup sharedAdapter end ----------------
 
